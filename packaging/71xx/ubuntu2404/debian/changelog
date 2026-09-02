@@ -2,7 +2,7 @@ nvidia-legacy-71xx (71.86.15-0nvl1~noble1) noble; urgency=medium
 
   * Reproducible build of NVIDIA 71.86.15 (71xx legacy series)
     for ubuntu2404 (noble).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 489572b.
+  * Rendered by render-debian.py from nvidia-legacy-common @ c5cfed0.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:11:18 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:13:00 +0000
 

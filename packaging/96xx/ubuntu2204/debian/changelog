@@ -2,7 +2,7 @@ nvidia-legacy-96xx (96.43.23-0nvl1~jammy1) jammy; urgency=medium
 
   * Reproducible build of NVIDIA 96.43.23 (96xx legacy series)
     for ubuntu2204 (jammy).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 489572b.
+  * Rendered by render-debian.py from nvidia-legacy-common @ c5cfed0.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:11:18 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:13:00 +0000
 
