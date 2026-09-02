@@ -2,7 +2,7 @@ nvidia-legacy-340xx (340.108-0nvl1~jammy1) jammy; urgency=medium
 
   * Reproducible build of NVIDIA 340.108 (340xx legacy series)
     for ubuntu2204 (jammy).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 59f49cd.
+  * Rendered by render-debian.py from nvidia-legacy-common @ a8cfb1d.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 19:22:29 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 19:25:52 +0000
 
