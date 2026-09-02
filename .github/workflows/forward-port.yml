@@ -1,12 +1,9 @@
 name: forward-port
 
-# Runs the heavy compile sweeps that don't belong on a laptop:
-#  * feasibility-recheck: compile every legacy module against a kernel sweep
-#    (4.9 .. 7.3), NO GPU, report the first failing kernel per series
-#  * on a schedule + on demand; commits the docs/forward-port-status/*.md via PR
-#
-# Uses GitHub-hosted runners (4 vCPU). Kernel headers come from the distro where
-# possible, else a mainline tarball + `make modules_prepare` (cached).
+# Heavy compile sweeps that don't belong on a laptop:
+#  feasibility-recheck compiles every experimental/best-effort legacy module
+#  against a kernel sweep (NO GPU) and reports the first failing kernel.
+#  Runs on GitHub-hosted runners; commits docs/forward-port-status/*.md via PR.
 
 on:
   workflow_dispatch:
@@ -14,14 +11,20 @@ on:
       series:
         description: "series (blank = all experimental/best-effort)"
         required: false
-      from: { description: "kernel from (X.Y)", required: false, default: "5.4" }
-      to:   { description: "kernel to (X.Y)",   required: false, default: "7.3" }
+      from:
+        description: "kernel from (X.Y)"
+        required: false
+        default: "5.4"
+      to:
+        description: "kernel to (X.Y)"
+        required: false
+        default: "7.3"
       patched:
         description: "apply the gated patch series first"
         type: boolean
         default: true
   schedule:
-    - cron: '0 3 * * 6'          # Saturday 03:00 UTC
+    - cron: "0 3 * * 6"
 
 permissions:
   contents: write
@@ -30,25 +33,15 @@ permissions:
 jobs:
   matrix:
     runs-on: ubuntu-latest
-    outputs: { series: ${{ steps.s.outputs.list }} }
+    outputs:
+      series: ${{ steps.s.outputs.list }}
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: true }
+        with:
+          submodules: true
       - run: pip install pyyaml
       - id: s
-        run: |
-          if [ -n "${{ inputs.series }}" ]; then
-            echo "list=[\"${{ inputs.series }}\"]" >> "$GITHUB_OUTPUT"
-          else
-            python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import yaml, json
-          d = yaml.safe_load(open("common/drivers.yaml"))["series"]
-          sel = [k for k, v in d.items()
-                 if v.get("modern_feasible", True)
-                 and v.get("status") in ("experimental", "best-effort")]
-          print("list=" + json.dumps(sel))
-          PY
-          fi
+        run: python3 .github/scripts/fwd-series.py "${{ inputs.series }}" >> "$GITHUB_OUTPUT"
 
   sweep:
     needs: matrix
@@ -60,25 +53,24 @@ jobs:
         series: ${{ fromJson(needs.matrix.outputs.series) }}
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: true }
+        with:
+          submodules: true
       - name: deps
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y podman python3-yaml build-essential bc bison flex \
-            libssl-dev libelf-dev xz-utils cpio curl
+          sudo apt-get install -y podman python3-yaml curl xz-utils
       - name: cache upstream .run
         uses: actions/cache@v4
-        with: { path: ~/.cache/nvidia-legacy, key: run-${{ matrix.series }} }
-      - name: cache mainline kernel trees
-        uses: actions/cache@v4
-        with: { path: ~/.cache/nvl-kernels, key: kernels-v1 }
+        with:
+          path: ~/.cache/nvidia-legacy
+          key: run-${{ matrix.series }}
       - name: verify blobs
         run: common/scripts/verify-run.sh ${{ matrix.series }}
       - name: feasibility-recheck
         run: |
-          common/scripts/feasibility-recheck.sh ${{ matrix.series }} \
-            --from ${{ inputs.from || '5.4' }} --to ${{ inputs.to || '7.3' }} \
-            ${{ (inputs.patched == 'false') && ' ' || '--patched' }}
+          FLAGS="--from ${{ inputs.from || '5.4' }} --to ${{ inputs.to || '7.3' }}"
+          if [ "${{ inputs.patched }}" != "false" ]; then FLAGS="$FLAGS --patched"; fi
+          common/scripts/feasibility-recheck.sh ${{ matrix.series }} $FLAGS
       - uses: actions/upload-artifact@v4
         with:
           name: forward-port-status-${{ matrix.series }}
@@ -90,18 +82,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: true }
+        with:
+          submodules: true
       - uses: actions/download-artifact@v4
-        with: { path: /tmp/fps, merge-multiple: true }
+        with:
+          path: /tmp/fps
+          merge-multiple: true
       - run: |
           mkdir -p common/docs/forward-port-status
           cp /tmp/fps/*.md common/docs/forward-port-status/ 2>/dev/null || true
-      - name: PR to common/ with updated status
-        uses: peter-evans/create-pull-request@v6
+      - uses: peter-evans/create-pull-request@v6
         with:
           path: common
           branch: bot/forward-port-status
           title: "docs: forward-port compile-sweep status"
           commit-message: "docs: forward-port compile-sweep status (automated)"
-          body: "Automated `feasibility-recheck.sh` sweep. First-failing kernel per series updated."
+          body: "Automated feasibility-recheck.sh sweep."
           labels: automated, forward-port
