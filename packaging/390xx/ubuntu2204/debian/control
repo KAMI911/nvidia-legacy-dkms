@@ -97,4 +97,4 @@ Description: NVIDIA legacy 390.157 driver — DKMS kernel module source
  DKMS source for the nvidia, nvidia-modeset, nvidia-drm and nvidia-uvm kernel
  modules from the 390.157 release. Rebuilt automatically for every installed
  kernel (Debian, Ubuntu HWE, mainline PPA and Ubuntu kernel PPA).
- Community patches extend build support to Linux <= 6.12.
+ Community patches extend build support to Linux <= 7.2.
