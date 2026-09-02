@@ -1,0 +1,15 @@
+# NOTE: packaging/*/*/debian/ IS committed (rendered by scripts/regen.sh, then
+# reviewed in the diff). Do not ignore it — OBS scmsync + audit rely on it.
+# build output
+/../build/
+*.deb
+*.dsc
+*.buildinfo
+*.changes
+*.tar.xz
+*.tar.gz
+# staged patch imports awaiting review
+/common/patches/*/_incoming/
+# caches
+.cache/
+__pycache__/

@@ -1,0 +1,76 @@
+name: build-reprotest
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      full:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs: { matrix: ${{ steps.g.outputs.m }} }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.x' }
+      - run: pip install pyyaml
+      - id: g
+        run: |
+          if [ "${{ inputs.full }}" = "true" ]; then
+            echo "m=$(python3 .github/scripts/gen-matrix.py)" >> "$GITHUB_OUTPUT"
+          else
+            echo "m=$(python3 .github/scripts/gen-matrix.py --series 390xx)" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: true }
+      - name: host deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y sbuild schroot debootstrap reprotest diffoscope \
+            devscripts blhc python3-yaml xz-utils curl
+          sudo sbuild-adduser "$USER" || true
+      - name: cache upstream .run
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/nvidia-legacy
+          key: run-${{ matrix.series }}
+      - name: verify upstream blobs
+        run: common/scripts/verify-run.sh ${{ matrix.series }}
+      - name: create chroot
+        run: |
+          set -e
+          case "${{ matrix.target }}" in
+            debian*)  MIR=http://deb.debian.org/debian ;;
+            ubuntu*)  MIR=http://azure.archive.ubuntu.com/ubuntu ;;
+          esac
+          CN=$(python3 -c "import yaml;print(yaml.safe_load(open('common/drivers.yaml'))['targets']['${{ matrix.target }}']['codename'])")
+          sudo sbuild-createchroot --make-sbuild-tarball=/srv/chroot/${CN}.tar.gz \
+            "$CN" "$(mktemp -d)" "$MIR"
+      - name: build (clean chroot, all arches)
+        run: .github/scripts/sbuild-wrap.sh ${{ matrix.series }} ${{ matrix.target }}
+      - name: reprotest (bit-identical rebuild)
+        run: .github/scripts/reprotest-wrap.sh ${{ matrix.series }} ${{ matrix.target }}
+        continue-on-error: ${{ !matrix.blocking }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debs-${{ matrix.series }}-${{ matrix.target }}
+          path: |
+            ../build/*.deb
+            ../build/*.dsc
+            ../build/*.tar.*
+            ../build/*.buildinfo
+            ../build/*.changes

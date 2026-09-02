@@ -1,0 +1,31 @@
+# Project config for home:kami911:nvidia-legacy:dkms
+# Focus: determinism + Debian/Ubuntu native tooling.
+
+%if "%_repository" =~ "Debian" || "%_repository" =~ "Ubuntu"
+Type: dsc
+Repotype: debian
+Buildengine: debootstrap
+Patterntype: none
+
+# Reproducibility knobs
+BuildFlags: obsproduct:disable
+BuildFlags: nochecks:0
+Environment: SOURCE_DATE_EPOCH ""   # injected per-package from changelog by debhelper
+Environment: DEB_BUILD_OPTIONS "reproducible=+all nostrip=0 parallel=4"
+Environment: TZ "UTC"
+Environment: LC_ALL "C.UTF-8"
+
+# Never let a build reach the network.
+BuildFlags: offline
+
+Support: ca-certificates
+Support: xz-utils
+Support: dh-dkms
+Support: dpkg-dev
+Support: debhelper
+Support: quilt
+%endif
+
+# Keep the same toolchain versions per distro release for byte-stable output;
+# pin via the distro's own frozen archive (Debian point releases / Ubuntu -updates
+# snapshot). Document the snapshot timestamp in each release's .buildinfo.

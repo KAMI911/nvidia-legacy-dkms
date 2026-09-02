@@ -1,0 +1,11 @@
+<multibuild>
+  <!-- One flavour per distro target: OBS picks
+       nvidia-legacy-<series>-<flavour>.dsc for the matching repository.
+       obs-sync.sh writes those alternative .dsc files. -->
+  <flavor>Debian_11</flavor>
+  <flavor>Debian_12</flavor>
+  <flavor>Debian_13</flavor>
+  <flavor>xUbuntu_20.04</flavor>
+  <flavor>xUbuntu_22.04</flavor>
+  <flavor>xUbuntu_24.04</flavor>
+</multibuild>

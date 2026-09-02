@@ -1,0 +1,32 @@
+name: kernel-refresh
+
+# Weekly: discover new kernels (distro archives, Ubuntu HWE, kernel-team PPA,
+# kernel.org mainline) and append pinned entries to tests/dkms-matrix/kernels.yaml.
+# Opens a PR; CI then proves the DKMS source still builds against them.
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y python3-yaml curl
+      - name: discover + update kernels.yaml
+        run: python3 .github/scripts/refresh-kernels.py
+      - name: open PR if changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/kernel-refresh
+          title: 'tests: refresh DKMS kernel matrix'
+          commit-message: 'tests: refresh DKMS kernel matrix (automated)'
+          body: |
+            Automated kernel discovery. CI must show the DKMS source still
+            builds against every new **blocking** entry before merge.
+          labels: automated, kernel-matrix

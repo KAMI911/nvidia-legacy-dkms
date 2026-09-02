@@ -1,0 +1,40 @@
+# Kernels the DKMS source MUST build against, per target. CI installs each
+# linux-headers-* package (pinned version) and runs `dkms build`.
+#
+# Keep this file refreshed by .github/workflows/kernel-refresh.yml (weekly):
+# it queries the distro archives + the Ubuntu kernel PPA + kernel.org mainline
+# and appends any new entry, pinning the exact header package version.
+#
+# fetch:
+#   archive  -> from the target's own apt archive
+#   hwe      -> linux-hwe-* metapackage in the target archive
+#   kernel-ppa -> ppa:canonical-kernel-team/ppa  (Ubuntu only)
+#   mainline -> https://kernel.ubuntu.com/mainline (Ubuntu) / experimental (Debian)
+
+debian11:
+  - { abi: "5.10.0-33-amd64",  pkg: "linux-headers-5.10.0-33-amd64",  ver: "5.10.226-1",   fetch: archive, blocking: true }
+  - { abi: "6.1.0-0.deb11.13-amd64", pkg: "linux-headers-6.1.0-0.deb11.13-amd64", ver: "*", fetch: hwe, blocking: true }
+
+debian12:
+  - { abi: "6.1.0-25-amd64",   pkg: "linux-headers-6.1.0-25-amd64",   ver: "6.1.106-3",    fetch: archive, blocking: true }
+  - { abi: "6.1.0-25-686-pae", pkg: "linux-headers-6.1.0-25-686-pae", ver: "6.1.106-3",    fetch: archive, blocking: true, arch: i386 }
+  - { abi: "6.11-bpo-amd64",   pkg: "linux-headers-amd64",            ver: "*",             fetch: backports, blocking: false }
+
+debian13:
+  - { abi: "6.12.0-amd64",     pkg: "linux-headers-6.12.0-amd64",     ver: "*",             fetch: archive, blocking: true }
+  - { abi: "6.12.0-686-pae",   pkg: "linux-headers-6.12.0-686-pae",   ver: "*",             fetch: archive, blocking: true, arch: i386 }
+
+ubuntu2004:
+  - { abi: "5.4.0-200-generic",  pkg: "linux-headers-5.4.0-200-generic",  ver: "*", fetch: archive,    blocking: true }
+  - { abi: "5.15.0-125-generic", pkg: "linux-headers-5.15.0-125-generic", ver: "*", fetch: hwe,        blocking: true }
+
+ubuntu2204:
+  - { abi: "5.15.0-125-generic", pkg: "linux-headers-5.15.0-125-generic", ver: "*", fetch: archive,    blocking: true }
+  - { abi: "6.8.0-45-generic",   pkg: "linux-headers-6.8.0-45-generic",   ver: "*", fetch: hwe,        blocking: true }
+  - { abi: "6.11-mainline",      pkg: "linux-headers-6.11.0-*",           ver: "*", fetch: mainline,    blocking: false }
+
+ubuntu2404:
+  - { abi: "6.8.0-45-generic",   pkg: "linux-headers-6.8.0-45-generic",   ver: "*", fetch: archive,    blocking: true }
+  - { abi: "6.11.0-9-generic",   pkg: "linux-headers-6.11.0-9-generic",   ver: "*", fetch: hwe,        blocking: true }
+  - { abi: "6.14-kernel-ppa",    pkg: "linux-headers-6.14.0-*",           ver: "*", fetch: kernel-ppa, blocking: false }
+  - { abi: "latest-mainline",    pkg: "linux-headers-*",                  ver: "*", fetch: mainline,    blocking: false }

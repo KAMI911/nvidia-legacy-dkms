@@ -1,0 +1,40 @@
+<project name="home:kami911:nvidia-legacy:dkms">
+  <title>NVIDIA legacy drivers — DKMS (Debian &amp; Ubuntu, reproducible)</title>
+  <description>
+    Reproducible DKMS packages for every legacy NVIDIA driver series
+    (71/96/173/304/340/390/470xx). Source packages are rendered and
+    checksum-pinned by CI in https://github.com/kami911/nvidia-legacy-dkms ;
+    OBS builds them in a clean chroot. Publishing is gated on the no-GPU test
+    suite passing. Not affiliated with NVIDIA.
+  </description>
+  <person userid="kami911" role="maintainer"/>
+  <person userid="kami911" role="bugowner"/>
+
+  <repository name="Debian_13">
+    <path project="Debian:13" repository="main"/>
+    <arch>x86_64</arch>
+    <arch>i586</arch>
+  </repository>
+  <repository name="Debian_12">
+    <path project="Debian:12" repository="main"/>
+    <arch>x86_64</arch>
+    <arch>i586</arch>
+  </repository>
+  <repository name="Debian_11">
+    <path project="Debian:11" repository="main"/>
+    <arch>x86_64</arch>
+    <arch>i586</arch>
+  </repository>
+  <repository name="xUbuntu_24.04">
+    <path project="Ubuntu:24.04" repository="universe"/>
+    <arch>x86_64</arch>
+  </repository>
+  <repository name="xUbuntu_22.04">
+    <path project="Ubuntu:22.04" repository="universe"/>
+    <arch>x86_64</arch>
+  </repository>
+  <repository name="xUbuntu_20.04">
+    <path project="Ubuntu:20.04" repository="universe"/>
+    <arch>x86_64</arch>
+  </repository>
+</project>

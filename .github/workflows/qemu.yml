@@ -1,0 +1,45 @@
+name: qemu
+
+on:
+  workflow_call:
+    inputs:
+      full: { type: boolean, default: false }
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs: { matrix: ${{ steps.g.outputs.m }} }
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml
+      - id: g
+        run: |
+          SEL=""; [ "${{ inputs.full }}" = "true" ] || SEL="--series 390xx"
+          echo "m=$(python3 .github/scripts/gen-matrix.py $SEL)" >> "$GITHUB_OUTPUT"
+
+  qemu:
+    needs: matrix
+    # GitHub's ubuntu-latest runners expose nested KVM on the larger images;
+    # fall back to TCG (slow) if /dev/kvm is absent — run.sh handles the skip.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: true }
+      - uses: actions/download-artifact@v4
+        with:
+          name: debs-${{ matrix.series }}-${{ matrix.target }}
+          path: ../build
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-system-x86 qemu-utils cloud-image-utils \
+            dpkg-dev python3-yaml curl
+      - name: no-GPU module load + Xorg ABI in a real VM
+        run: tests/qemu/run.sh ${{ matrix.series }} ${{ matrix.target }}
+        continue-on-error: ${{ !matrix.blocking }}

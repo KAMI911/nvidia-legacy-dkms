@@ -1,0 +1,42 @@
+# Which (series × target) combinations this repo builds, and their CI weight.
+# `blocking: false` => failures are reported but never gate a release.
+#
+# Consumed by scripts/regen.sh and by .github/workflows/_matrix.yml.
+
+flavour: dkms
+
+build:
+  "470xx":
+    targets: [debian11, debian12, debian13, ubuntu2004, ubuntu2204, ubuntu2404]
+    archs: { debian: [amd64], ubuntu: [amd64] }
+    blocking: true
+
+  "390xx":
+    targets: [debian11, debian12, debian13, ubuntu2004, ubuntu2204, ubuntu2404]
+    archs: { debian: [amd64, i386], ubuntu: [amd64] }   # +i386 libs via multiarch
+    blocking: true
+
+  "340xx":
+    targets: [debian11, debian12, debian13, ubuntu2004, ubuntu2204, ubuntu2404]
+    archs: { debian: [amd64, i386], ubuntu: [amd64] }
+    blocking: true
+
+  "304xx":
+    targets: [debian11, debian12, ubuntu2004, ubuntu2204]
+    archs: { debian: [amd64, i386], ubuntu: [amd64] }
+    blocking: false        # best-effort
+
+  "173xx":
+    targets: [debian11]
+    archs: { debian: [amd64, i386], ubuntu: [] }
+    blocking: false        # experimental
+
+  "96xx":
+    targets: [debian11]
+    archs: { debian: [amd64, i386], ubuntu: [] }
+    blocking: false
+
+  "71xx":
+    targets: [debian11]
+    archs: { debian: [amd64, i386], ubuntu: [] }
+    blocking: false

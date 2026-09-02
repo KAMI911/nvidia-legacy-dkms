@@ -1,0 +1,73 @@
+name: release
+
+# Full matrix. Only combos that pass every BLOCKING stage get published to OBS.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      series: { description: 'single series (blank = all)', required: false }
+
+permissions:
+  contents: write
+
+jobs:
+  static:
+    uses: ./.github/workflows/static.yml
+
+  build:
+    needs: static
+    uses: ./.github/workflows/build-reprotest.yml
+    with: { full: true }
+
+  dkms:
+    needs: build
+    uses: ./.github/workflows/dkms-matrix.yml
+    with: { full: true }
+
+  autopkgtest:
+    needs: build
+    uses: ./.github/workflows/autopkgtest.yml
+    with: { full: true }
+
+  qemu:
+    needs: build
+    uses: ./.github/workflows/qemu.yml
+    with: { full: true }
+
+  publish:
+    needs: [static, build, dkms, autopkgtest, qemu]
+    runs-on: ubuntu-latest
+    environment: obs            # requires manual approval + holds OSC_* secrets
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: true }
+      - uses: actions/download-artifact@v4
+        with: { path: ../build, merge-multiple: true }
+      - name: osc
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y osc python3-yaml
+          mkdir -p ~/.config/osc
+          cat > ~/.config/osc/oscrc <<EOF
+          [general]
+          apiurl = ${{ vars.OSC_APIURL || 'https://api.opensuse.org' }}
+          [${{ vars.OSC_APIURL || 'https://api.opensuse.org' }}]
+          user = ${{ secrets.OSC_USER }}
+          pass = ${{ secrets.OSC_PASS }}
+          EOF
+      - name: compute which combos passed every blocking stage
+        id: gate
+        run: |
+          # Each reusable workflow uploads a <stage>-verdicts.json artifact of
+          # {series/target: pass|fail|skip}. Intersect them.
+          python3 .github/scripts/release-gate.py ../build > passed.txt
+          cat passed.txt
+      - name: sync source packages to OBS + set publish flags
+        run: |
+          while read -r series target; do
+            echo "publish $series/$target"
+            BUILDDIR=../build tools/obs-sync.sh "$series"
+            python3 .github/scripts/obs-set-publish.py "$series" "$target" enable
+          done < passed.txt
+      - name: disable publish for combos that did NOT pass
+        run: python3 .github/scripts/obs-set-publish.py --disable-missing passed.txt
