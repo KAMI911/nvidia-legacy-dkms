@@ -2,7 +2,7 @@ nvidia-legacy-390xx (390.157-0nvl1~focal1) focal; urgency=medium
 
   * Reproducible build of NVIDIA 390.157 (390xx legacy series)
     for ubuntu2004 (focal).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 3d6e418.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 7d5a5a9.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:35:14 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:39:05 +0000
 

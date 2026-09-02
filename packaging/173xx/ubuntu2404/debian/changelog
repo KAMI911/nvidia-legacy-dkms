@@ -2,7 +2,7 @@ nvidia-legacy-173xx (173.14.39-0nvl1~noble1) noble; urgency=medium
 
   * Reproducible build of NVIDIA 173.14.39 (173xx legacy series)
     for ubuntu2404 (noble).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 3d6e418.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 7d5a5a9.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:35:14 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:39:05 +0000
 
