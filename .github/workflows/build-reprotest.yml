@@ -14,7 +14,8 @@ permissions:
 jobs:
   matrix:
     runs-on: ubuntu-latest
-    outputs: { matrix: ${{ steps.g.outputs.m }} }
+    outputs:
+      matrix: "${{ steps.g.outputs.m }}"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
