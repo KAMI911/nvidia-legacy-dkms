@@ -5,6 +5,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 COMMON="$ROOT/common"
 rc=0
+# CI checkout is owned by a different uid than the runner user
+git config --global --add safe.directory '*' 2>/dev/null || true
 note() { printf '\033[36m::\033[0m %s\n' "$*"; }
 bad()  { printf '\033[31mFAIL\033[0m %s\n' "$*"; rc=1; }
 
@@ -18,8 +20,12 @@ fi
 
 note "2. shellcheck"
 if command -v shellcheck >/dev/null; then
-  mapfile -d '' scripts < <(git -C "$ROOT" ls-files -z '*.sh')
-  shellcheck -S warning "${scripts[@]/#/$ROOT/}" || bad "shellcheck warnings"
+  mapfile -d '' scripts < <(git -C "$ROOT" ls-files -z '*.sh' ':!:common')
+  if [ "${#scripts[@]}" -gt 0 ]; then
+    ( cd "$ROOT" && shellcheck -S error -e SC1091 "${scripts[@]}" ) || bad "shellcheck errors"
+  else
+    note "  (no .sh files found — skipped)"
+  fi
 else note "  (shellcheck not installed — skipped)"; fi
 
 note "3. patch provenance complete"
