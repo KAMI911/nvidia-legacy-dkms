@@ -1,0 +1,80 @@
+name: ci
+
+# One combo, end to end, sharing a workspace: build -> dkms-matrix -> autopkgtest
+# -> qemu module load. This is the no-GPU release gate for a single (series,target).
+# The smoke-build / build-reprotest / forward-port workflows cover breadth; this
+# covers depth.
+
+on:
+  push:
+    branches: [main]
+    paths: ['common/**', 'packaging/**', 'tests/**', '.github/workflows/ci.yml']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      series: { description: series, default: '390xx' }
+      target: { description: target, default: 'debian13' }
+
+permissions:
+  contents: read
+
+env:
+  SERIES: ${{ github.event.inputs.series || '390xx' }}
+  TARGET: ${{ github.event.inputs.target || 'debian13' }}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: true }
+
+      - name: host deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dpkg-dev xz-utils python3-yaml curl podman \
+            qemu-system-x86 qemu-utils cloud-image-utils
+
+      - name: cache upstream .run
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/nvidia-legacy
+          key: run-${{ github.event.inputs.series || '390xx' }}
+
+      - name: build the .debs
+        env: { NVL_XZ_LEVEL: '-4' }
+        run: |
+          B="$RUNNER_TEMP/build"; mkdir -p "$B"
+          common/scripts/verify-run.sh "$SERIES"
+          common/scripts/assemble-source.sh "$SERIES" "$B"
+          UV=$(python3 -c "import yaml;print(yaml.safe_load(open('common/drivers.yaml'))['series']['$SERIES']['version'])")
+          tar -C "$B" -xf "$B"/nvidia-legacy-${SERIES}_${UV}.orig.tar.xz
+          python3 common/scripts/render-debian.py --series "$SERIES" --target "$TARGET" --flavour dkms --out "$B/nvidia-legacy-${SERIES}-${UV}"
+          ( cd "$B" && dpkg-source --no-check -b "nvidia-legacy-${SERIES}-${UV}" )
+          docker run --rm -v "$B":/b -w /b debian:trixie bash -c '
+            set -e; export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq
+            apt-get install -y -qq --no-install-recommends dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
+            apt-get build-dep -y -qq ./nvidia-legacy-*.dsc
+            dpkg-source --no-check -x nvidia-legacy-*.dsc /tmp/x
+            cd /tmp/x && dpkg-buildpackage -b -uc -us
+            cp /tmp/*.deb /b/
+          '
+          ls -la "$B"/*.deb
+          echo "BUILDDIR=$B" >> "$GITHUB_ENV"
+
+      - name: dkms-matrix (compile module against kernels.yaml)
+        run: BUILDDIR="$BUILDDIR" tests/dkms-matrix/run.sh "$SERIES" "$TARGET"
+
+      - name: autopkgtest (install / purge / conflicts / xorg-abi)
+        run: BUILDDIR="$BUILDDIR" tests/autopkgtest/run.sh "$SERIES" "$TARGET"
+
+      - name: qemu (module load, no GPU)
+        run: BUILDDIR="$BUILDDIR" tests/qemu/run.sh "$SERIES" "$TARGET"
+        continue-on-error: true   # nested KVM not always available on GH runners
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-${{ github.event.inputs.series || '390xx' }}-${{ github.event.inputs.target || 'debian13' }}
+          path: ${{ env.BUILDDIR }}/*.deb

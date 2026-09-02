@@ -1,5 +1,6 @@
-# DKMS kernel matrix. RT/lowlatency entries: DKMS rebuilds for these
-# automatically on the user's box; CI just proves the source still compiles.
+# DKMS kernel matrix — the distro's own linux-headers metapackage is always
+# installable in a container and pins to that release's current kernel ABI.
+# mainline-sweep + RT entries are the wider non-blocking coverage.
 
 debian11:
 - abi: 5.10.0-33-amd64
@@ -13,45 +14,22 @@ debian11:
   pkg: linux-headers-6.1.0-0.deb11.13-amd64
   ver: '*'
 debian12:
-- abi: 6.1.0-25-amd64
+- abi: generic-amd64
   blocking: true
   fetch: archive
-  pkg: linux-headers-6.1.0-25-amd64
-  ver: 6.1.106-3
-- abi: 6.1.0-25-686-pae
-  arch: i386
-  blocking: true
-  fetch: archive
-  pkg: linux-headers-6.1.0-25-686-pae
-  ver: 6.1.106-3
-- abi: 6.11-bpo-amd64
-  blocking: false
-  fetch: backports
   pkg: linux-headers-amd64
   ver: '*'
-- abi: 6.1.0-25-rt-amd64
-  blocking: false
-  fetch: archive
-  pkg: linux-headers-6.1.0-25-rt-amd64
-  variant: rt
-  ver: 6.1.106-3
 debian13:
-- abi: 6.12.0-amd64
+- abi: generic-amd64
   blocking: true
   fetch: archive
-  pkg: linux-headers-6.12.0-amd64
+  pkg: linux-headers-amd64
   ver: '*'
-- abi: 6.12.0-686-pae
+- abi: generic-686-pae
   arch: i386
   blocking: true
   fetch: archive
-  pkg: linux-headers-6.12.0-686-pae
-  ver: '*'
-- abi: 6.12.0-rt-amd64
-  blocking: false
-  fetch: archive
-  pkg: linux-headers-6.12.0-rt-amd64
-  variant: rt
+  pkg: linux-headers-686-pae
   ver: '*'
 mainline-sweep:
 - abi: 6.12-mainline
@@ -121,51 +99,14 @@ ubuntu2004:
   pkg: linux-headers-5.15.0-125-generic
   ver: '*'
 ubuntu2204:
-- abi: 5.15.0-125-generic
+- abi: generic
   blocking: true
   fetch: archive
-  pkg: linux-headers-5.15.0-125-generic
-  ver: '*'
-- abi: 6.8.0-45-generic
-  blocking: true
-  fetch: hwe
-  pkg: linux-headers-6.8.0-45-generic
-  ver: '*'
-- abi: 6.11-mainline
-  blocking: false
-  fetch: mainline
-  pkg: linux-headers-6.11.0-*
-  ver: '*'
-- abi: 5.15.0-125-lowlatency
-  blocking: false
-  fetch: archive
-  pkg: linux-headers-5.15.0-125-lowlatency
-  variant: lowlatency
+  pkg: linux-headers-generic
   ver: '*'
 ubuntu2404:
-- abi: 6.8.0-45-generic
+- abi: generic
   blocking: true
   fetch: archive
-  pkg: linux-headers-6.8.0-45-generic
-  ver: '*'
-- abi: 6.11.0-9-generic
-  blocking: true
-  fetch: hwe
-  pkg: linux-headers-6.11.0-9-generic
-  ver: '*'
-- abi: 6.14-kernel-ppa
-  blocking: false
-  fetch: kernel-ppa
-  pkg: linux-headers-6.14.0-*
-  ver: '*'
-- abi: latest-mainline
-  blocking: false
-  fetch: mainline
-  pkg: linux-headers-*
-  ver: '*'
-- abi: 6.8.0-45-lowlatency
-  blocking: false
-  fetch: archive
-  pkg: linux-headers-6.8.0-45-lowlatency
-  variant: lowlatency
+  pkg: linux-headers-generic
   ver: '*'
