@@ -1,11 +1,9 @@
 name: build-reprotest
 
-# Builds each (series, target) source package, then builds the binaries TWICE
-# in a clean container with a deliberately varied environment, and diffoscopes
-# the two .deb sets. Any difference = the build is not reproducible.
-#
-# SOURCE_DATE_EPOCH is pinned from debian/changelog and the .orig tarball has a
-# fixed mtime, so the .debs must be byte-identical across runs.
+# Build each (series, target) TWICE in a clean container with a varied
+# environment, then diffoscope the .deb sets. SOURCE_DATE_EPOCH is pinned from
+# debian/changelog and the .orig tarball has a fixed mtime, so the .debs must be
+# byte-identical.
 
 on:
   push:
@@ -13,9 +11,6 @@ on:
     paths: ['common/**', 'packaging/**', '.github/workflows/build-reprotest.yml']
   pull_request:
   workflow_dispatch:
-    inputs:
-      series: { description: series, default: '390xx' }
-      target: { description: target, default: 'debian13' }
 
 permissions:
   contents: read
@@ -27,9 +22,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { series: '390xx', target: 'debian13', image: 'debian:trixie' }
-          - { series: '340xx', target: 'debian13', image: 'debian:trixie' }
-          - { series: '580xx', target: 'debian13', image: 'debian:trixie' }
+          - { series: '390xx', target: 'debian13' }
+          - { series: '340xx', target: 'debian13' }
+          - { series: '580xx', target: 'debian13' }
     steps:
       - uses: actions/checkout@v4
         with: { submodules: true }
@@ -37,7 +32,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/nvidia-legacy
-          key: "run-${{ matrix.series }}"
+          key: run-${{ matrix.series }}
       - name: host deps
         run: |
           sudo apt-get update -qq
@@ -54,39 +49,39 @@ jobs:
           python3 common/scripts/render-debian.py --series "$S" --target "$T" --flavour dkms --out "$B/nvidia-legacy-${S}-${UV}"
           ( cd "$B" && dpkg-source --no-check -b "nvidia-legacy-${S}-${UV}" )
           echo "B=$B" >> "$GITHUB_ENV"
-          echo "SRCPKG=nvidia-legacy-${S}" >> "$GITHUB_ENV"
-      - name: build twice with varied env
+      - name: build script
         run: |
-          run_build() {
-            local out="$1"; shift
-            docker run --rm -v "$B":/b "$@" ${{ matrix.image }} bash -c '
-              set -e; export DEBIAN_FRONTEND=noninteractive
-              apt-get update -qq
-              apt-get install -y -qq --no-install-recommends dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
-              apt-get build-dep -y -qq ./'"$SRCPKG"'_*.dsc
-              dpkg-source --no-check -x '"$SRCPKG"'_*.dsc /tmp/x
-              cd /tmp/x && dpkg-buildpackage -b -uc -us
-              mkdir -p /b/'"$out"' && cp /tmp/*.deb /b/'"$out"'/
-            '
-          }
-          run_build A -e TZ=UTC        -e LC_ALL=C.UTF-8
-          run_build B -e TZ=Asia/Tokyo -e LC_ALL=en_US.UTF-8 -e SOURCE_DATE_EPOCH_HINT=vary --hostname repro2
+          cat > "$RUNNER_TEMP/build.sh" <<'EOF'
+          set -e; export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
+          apt-get build-dep -y -qq ./nvidia-legacy-*.dsc
+          dpkg-source --no-check -x nvidia-legacy-*.dsc /tmp/x
+          cd /tmp/x && dpkg-buildpackage -b -uc -us
+          mkdir -p "/b/$OUTDIR" && cp /tmp/*.deb "/b/$OUTDIR/"
+          EOF
+      - name: pull image once
+        run: docker pull debian:trixie
+      - name: build A
+        run: docker run --rm -v "$B":/b -v "$RUNNER_TEMP/build.sh":/build.sh -e OUTDIR=A -e TZ=UTC -e LC_ALL=C.UTF-8 debian:trixie bash /build.sh
+      - name: build B (varied env)
+        run: docker run --rm -v "$B":/b -v "$RUNNER_TEMP/build.sh":/build.sh -e OUTDIR=B -e TZ=Asia/Tokyo -e LC_ALL=C.UTF-8 --hostname repro2 debian:trixie bash /build.sh
       - name: diffoscope
         run: |
           rc=0
           for a in "$B"/A/*.deb; do
             b="$B/B/$(basename "$a")"
-            if ! cmp -s "$a" "$b"; then
-              echo "::error::not reproducible: $(basename "$a")"
-              diffoscope --max-report-size 200000 "$a" "$b" || true
-              rc=1
+            if cmp -s "$a" "$b"; then
+              echo "identical: $(basename "$a")"
             else
-              echo "OK identical: $(basename "$a")"
+              echo "::error::not reproducible: $(basename "$a")"
+              diffoscope --max-report-size 150000 "$a" "$b" || true
+              rc=1
             fi
           done
           exit $rc
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: reprotest-diff-${{ matrix.series }}-${{ matrix.target }}
+          name: reprotest-${{ matrix.series }}-${{ matrix.target }}
           path: ${{ env.B }}

@@ -18,9 +18,11 @@ declare -A img=(
   [ubuntu2004]=ubuntu:20.04 [ubuntu2204]=ubuntu:22.04 [ubuntu2404]=ubuntu:24.04)
 base="${img[$target]:?unknown target}"
 
-deb="$(ls "$BUILDDIR"/nvidia-legacy-"$series"-kernel-dkms_*_all.deb \
-        "$BUILDDIR"/nvidia-legacy-"$series"-kernel-dkms_*.deb 2>/dev/null | head -1)" \
-  || { no "no kernel-dkms .deb in $BUILDDIR"; summary; exit 1; }
+deb=""
+for d in "$BUILDDIR"/nvidia-legacy-"$series"-kernel-dkms_*.deb; do
+  [ -e "$d" ] && { deb="$d"; break; }
+done
+[ -n "$deb" ] || { no "no kernel-dkms .deb in $BUILDDIR"; ls -la "$BUILDDIR" || true; summary; exit 1; }
 
 mapfile -t rows < <(python3 - "$(dirname "$0")/kernels.yaml" "$target" "$only" <<'PY'
 import sys, yaml
