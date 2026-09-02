@@ -2,7 +2,7 @@ nvidia-legacy-470xx (470.256.02-0nvl1~bookworm1) bookworm; urgency=medium
 
   * Reproducible build of NVIDIA 470.256.02 (470xx legacy series)
     for debian12 (bookworm).
-  * Rendered by render-debian.py from nvidia-legacy-common @ ec1e669.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 16cdfde.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 19:36:37 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 19:40:27 +0000
 
