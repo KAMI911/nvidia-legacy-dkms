@@ -22,8 +22,11 @@ Depends:
  xserver-xorg-video-nvidia-legacy-340xx (= ${binary:Version}),
  nvidia-legacy-340xx-kernel-support (= ${binary:Version}),
  nvidia-legacy-340xx-kernel-dkms (= ${binary:Version}),
-Recommends: libgl1-nvidia-legacy-340xx-glx
-Conflicts: nvidia-driver, nvidia-legacy-340xx-driver, nvidia-legacy-470xx-driver
+Recommends:
+ libgl1-nvidia-legacy-340xx-glx,
+Provides: nvidia-legacy-driver
+Conflicts: nvidia-driver, nvidia-legacy-driver
+Replaces: nvidia-legacy-driver
 Description: NVIDIA legacy 340.108 driver metapackage (GeForce 8/9/200/300 series (G8x, G9x, GT2xx))
  The 340.108 driver from the NVIDIA 340xx legacy series, repackaged as a
  reproducible build for trixie.

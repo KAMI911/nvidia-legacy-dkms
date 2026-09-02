@@ -1,4 +1,4 @@
-# 
+# nvidia-legacy build set — see common/drivers.yaml + docs/legacy-feasibility.md
 flavour: dkms
 build:
   580xx:
@@ -72,4 +72,49 @@ build:
       ubuntu:
       - amd64
     blocking: false
-    note: kernel module + libs everywhere; X driver only on debian11/ubuntu2004 (ABI<=24)
+    note: kernel module + libs + VDPAU everywhere; X via xorg-server-legacy-nvidia-23
+  173xx:
+    targets:
+    - debian12
+    - debian13
+    - ubuntu2204
+    - ubuntu2404
+    archs:
+      debian:
+      - amd64
+      - i386
+      ubuntu:
+      - amd64
+    blocking: false
+    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-19; compile-only
+      until hardware
+  96xx:
+    targets:
+    - debian12
+    - debian13
+    - ubuntu2204
+    - ubuntu2404
+    archs:
+      debian:
+      - amd64
+      - i386
+      ubuntu:
+      - amd64
+    blocking: false
+    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-12; compile-only
+      until hardware
+  71xx:
+    targets:
+    - debian12
+    - debian13
+    - ubuntu2204
+    - ubuntu2404
+    archs:
+      debian:
+      - amd64
+      - i386
+      ubuntu:
+      - amd64
+    blocking: false
+    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-2; compile-only
+      until hardware

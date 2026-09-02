@@ -34,5 +34,26 @@ PY
 )
 
 echo "rendered=$done skipped=$skipped"
+
+# xorg-server-legacy-nvidia-<abi> for every series in the build set that needs it
+if [ -f "$COMMON/scripts/render-xserver.py" ]; then
+  for abi in $(python3 - "$ROOT/series.yaml" "$COMMON/drivers.yaml" <<'PY'
+import sys, yaml
+build = yaml.safe_load(open(sys.argv[1]))["build"]
+series = yaml.safe_load(open(sys.argv[2]))["series"]
+abis = set()
+for s in build:
+    e = series.get(s, {})
+    if e.get("x_via") == "legacy-xserver":
+        abis.add(str(e.get("x_driver_max_abi", e["xorg_abi_max"])))
+print(" ".join(sorted(abis, key=int)))
+PY
+  ); do
+    echo ":: render xorg-server-legacy-nvidia-$abi"
+    python3 "$COMMON/scripts/render-xserver.py" --abi "$abi" \
+      --out "$ROOT/packaging/xserver-$abi" || rc=1
+  done
+fi
+
 echo "Review 'git status' under packaging/ and commit."
 exit $rc

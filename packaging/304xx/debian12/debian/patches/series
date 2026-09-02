@@ -1,0 +1,8 @@
+build/0001-disable-mtrr-4.3.patch
+build/0005-usercopy-4.16.patch
+build/0015-add-static-and-nv_-prefix-to-copied-drm-legacy-bits.patch
+build/0016-fix-mistake.patch
+build/0027-gcc14-fix.patch
+build/0028-failfast.patch
+build/0029-gcc15-fix.patch
+kernel/0017-vmalloc5.9.patch
