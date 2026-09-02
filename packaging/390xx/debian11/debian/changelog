@@ -2,7 +2,7 @@ nvidia-legacy-390xx (390.157-0nvl1~bullseye1) bullseye; urgency=medium
 
   * Reproducible build of NVIDIA 390.157 (390xx legacy series)
     for debian11 (bullseye).
-  * Rendered by render-debian.py from nvidia-legacy-common @ eed56e3.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 39f7b6b.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:43:27 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:46:00 +0000
 
