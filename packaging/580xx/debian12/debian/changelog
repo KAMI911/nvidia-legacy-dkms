@@ -2,7 +2,7 @@ nvidia-legacy-580xx (580.178.04-0nvl1~bookworm1) bookworm; urgency=medium
 
   * Reproducible build of NVIDIA 580.178.04 (580xx legacy series)
     for debian12 (bookworm).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 9589577.
+  * Rendered by render-debian.py from nvidia-legacy-common @ daca702.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:56:36 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 21:13:08 +0000
 

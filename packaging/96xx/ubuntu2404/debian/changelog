@@ -2,7 +2,7 @@ nvidia-legacy-96xx (96.43.23-0nvl1~noble1) noble; urgency=medium
 
   * Reproducible build of NVIDIA 96.43.23 (96xx legacy series)
     for ubuntu2404 (noble).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 9589577.
+  * Rendered by render-debian.py from nvidia-legacy-common @ daca702.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:56:36 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 21:13:08 +0000
 
