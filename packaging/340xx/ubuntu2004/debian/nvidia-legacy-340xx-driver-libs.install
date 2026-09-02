@@ -6,4 +6,5 @@ usr/lib/*/libnvidia-ml.so.*
 usr/lib/*/libnvidia-cfg.so.*
 usr/lib/*/libnvidia-fatbinaryloader.so.*
 usr/lib/*/libnvidia-opencl.so.*
+usr/lib/*/libnvidia-encode.so.*
 usr/share/doc/nvidia-legacy-340xx-driver-libs/LICENSE
