@@ -15,6 +15,19 @@ build:
     blocking: true
     note: "Maxwell/Pascal/Volta; amd64 only; active upstream \u2014 bump version on\
       \ respin"
+  580xx-open:
+    targets:
+    - debian12
+    - debian13
+    - ubuntu2204
+    - ubuntu2404
+    archs:
+      debian:
+      - amd64
+      ubuntu:
+      - amd64
+    blocking: true
+    note: open kernel-open/ modules (MIT/GPL-2); same userspace as 580xx
   470xx:
     targets:
     - debian11

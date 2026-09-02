@@ -4,7 +4,7 @@ Upstream-Contact: https://www.nvidia.com/
 Source: https://download.nvidia.com/XFree86/
 Comment:
  This package repackages the proprietary NVIDIA Accelerated Linux Graphics
- Driver, version 580.95.05, as a reproducible build. The driver binaries are
+ Driver, version 580.178.04, as a reproducible build. The driver binaries are
  NOT free software. They are redistributed under the "License For Customer Use
  of NVIDIA Software" (reproduced below).
  .

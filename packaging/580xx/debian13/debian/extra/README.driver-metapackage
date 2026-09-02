@@ -1,6 +1,6 @@
 nvidia-legacy-580xx-driver is a metapackage. It pulls in the runtime
 libraries, the Xorg driver, the utilities, the kernel-support glue and (for the
-DKMS flavour) the DKMS module source for NVIDIA 580.95.05.
+DKMS flavour) the DKMS module source for NVIDIA 580.178.04.
 
 Hardware: Maxwell, Pascal, Volta (GeForce GTX 700/900/1000, TITAN V)
 Upstream status: Last driver branch for Maxwell/Pascal/Volta. NVIDIA still ships kernel-compat + security fixes here (the 590 branch drops these GPUs). Track upstream respins.

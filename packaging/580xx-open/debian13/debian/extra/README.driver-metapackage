@@ -1,0 +1,9 @@
+nvidia-legacy-580xx-open-driver is a metapackage. It pulls in the runtime
+libraries, the Xorg driver, the utilities, the kernel-support glue and (for the
+DKMS flavour) the DKMS module source for NVIDIA 580.178.04.
+
+Hardware: Turing+ recommended; also Maxwell/Pascal/Volta (same GPUs as 580xx)
+Upstream status: Open-source flavour of the 580 branch: builds the kernel-open/ modules (MIT/GPL-2 dual-licensed) instead of the proprietary blob modules. Same userspace libraries. NVIDIA's preferred path going forward.
+
+
+To remove every trace:  apt purge '~nnvidia-legacy-580xx-open-.*'
