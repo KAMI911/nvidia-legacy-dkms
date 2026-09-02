@@ -5,5 +5,4 @@ DKMS flavour) the DKMS module source for NVIDIA 304.137.
 Hardware: GeForce 6/7 series (NV4x, G7x)
 Upstream status: Upstream EOL 2017-09. Kernel module forward-ported to Linux ~7.2 (import flydiscohuebr/nvidia-304 + adapt 390xx patches). X driver needs the private xorg-server-legacy-nvidia-23 (video ABI 23). See docs/legacy-feasibility.md.
 
-
 To remove every trace:  apt purge '~nnvidia-legacy-304xx-.*'

@@ -45,7 +45,6 @@ Description: NVIDIA legacy 580.178.04 driver metapackage (Maxwell, Pascal, Volta
  .
  UPSTREAM STATUS: Last driver branch for Maxwell/Pascal/Volta. NVIDIA still ships kernel-compat + security fixes here (the 590 branch drops these GPUs). Track upstream respins.
 
-
 Package: nvidia-legacy-580xx-driver-bin
 Architecture: amd64
 Depends: ${misc:Depends}, ${shlibs:Depends}

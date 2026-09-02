@@ -5,5 +5,4 @@ DKMS flavour) the DKMS module source for NVIDIA 580.178.04.
 Hardware: Maxwell, Pascal, Volta (GeForce GTX 700/900/1000, TITAN V)
 Upstream status: Last driver branch for Maxwell/Pascal/Volta. NVIDIA still ships kernel-compat + security fixes here (the 590 branch drops these GPUs). Track upstream respins.
 
-
 To remove every trace:  apt purge '~nnvidia-legacy-580xx-.*'

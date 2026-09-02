@@ -45,7 +45,6 @@ Description: NVIDIA legacy 580.178.04 driver metapackage (Turing+ recommended; a
  .
  UPSTREAM STATUS: Open-source flavour of the 580 branch: builds the kernel-open/ modules (MIT/GPL-2 dual-licensed) instead of the proprietary blob modules. Same userspace libraries. NVIDIA's preferred path going forward.
 
-
 Package: nvidia-legacy-580xx-open-driver-bin
 Architecture: amd64
 Depends: ${misc:Depends}, ${shlibs:Depends}

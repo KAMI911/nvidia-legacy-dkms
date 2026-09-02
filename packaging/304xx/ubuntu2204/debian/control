@@ -44,7 +44,6 @@ Description: NVIDIA legacy 304.137 driver metapackage (GeForce 6/7 series (NV4x,
  Supported hardware: GeForce 6/7 series (NV4x, G7x).
  .
  UPSTREAM STATUS: Upstream EOL 2017-09. Kernel module forward-ported to Linux ~7.2 (import flydiscohuebr/nvidia-304 + adapt 390xx patches). X driver needs the private xorg-server-legacy-nvidia-23 (video ABI 23). See docs/legacy-feasibility.md.
-
  .
  SECURITY WARNING: this driver series receives NO security updates from NVIDIA
  and has publicly known, unpatched vulnerabilities. Install it only on isolated
