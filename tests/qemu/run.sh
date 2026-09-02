@@ -13,7 +13,7 @@
 set -euo pipefail
 . "$(dirname "$0")/../lib.sh"
 series="${1:?series}"; target="${2:?target}"
-qdir="$(dirname "$0")"
+qdir="$(cd "$(dirname "$0")" && pwd)"
 
 [ -e /dev/kvm ] || { skip "no /dev/kvm — qemu stage skipped"; summary; exit 0; }
 command -v qemu-system-x86_64 >/dev/null || { skip "qemu not installed"; summary; exit 0; }
