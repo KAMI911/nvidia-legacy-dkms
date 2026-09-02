@@ -49,23 +49,12 @@ jobs:
           python3 common/scripts/render-debian.py --series "$S" --target "$T" --flavour dkms --out "$B/nvidia-legacy-${S}-${UV}"
           ( cd "$B" && dpkg-source --no-check -b "nvidia-legacy-${S}-${UV}" )
           echo "B=$B" >> "$GITHUB_ENV"
-      - name: build script
-        run: |
-          cat > "$RUNNER_TEMP/build.sh" <<'EOF'
-          set -e; export DEBIAN_FRONTEND=noninteractive
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
-          apt-get build-dep -y -qq ./nvidia-legacy-*.dsc
-          dpkg-source --no-check -x nvidia-legacy-*.dsc /tmp/x
-          cd /tmp/x && dpkg-buildpackage -b -uc -us
-          mkdir -p "/b/$OUTDIR" && cp /tmp/*.deb "/b/$OUTDIR/"
-          EOF
       - name: pull image once
         run: docker pull debian:trixie
       - name: build A
-        run: docker run --rm -v "$B":/b -v "$RUNNER_TEMP/build.sh":/build.sh -e OUTDIR=A -e TZ=UTC -e LC_ALL=C.UTF-8 debian:trixie bash /build.sh
+        run: docker run --rm -v "$B":/b -v "$PWD/tests/repro-build.sh":/rb.sh -e OUTDIR=A -e TZ=UTC        -e LC_ALL=C.UTF-8 debian:trixie sh /rb.sh
       - name: build B (varied env)
-        run: docker run --rm -v "$B":/b -v "$RUNNER_TEMP/build.sh":/build.sh -e OUTDIR=B -e TZ=Asia/Tokyo -e LC_ALL=C.UTF-8 --hostname repro2 debian:trixie bash /build.sh
+        run: docker run --rm -v "$B":/b -v "$PWD/tests/repro-build.sh":/rb.sh -e OUTDIR=B -e TZ=Asia/Tokyo -e LC_ALL=C.UTF-8 --hostname repro2 debian:trixie sh /rb.sh
       - name: diffoscope
         run: |
           rc=0

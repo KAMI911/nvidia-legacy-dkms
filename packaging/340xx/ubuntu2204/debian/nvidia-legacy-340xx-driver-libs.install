@@ -1,3 +1,2 @@
 usr/lib/*/lib*.so.*
-usr/lib/xorg/modules/extensions/*
 usr/share/doc/nvidia-legacy-driver-libs/*

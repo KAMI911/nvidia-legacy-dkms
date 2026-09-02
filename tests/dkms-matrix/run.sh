@@ -40,7 +40,7 @@ for row in "${rows[@]}"; do
   cid="dkmstest-$series-$target-${abi//[^a-zA-Z0-9]/_}"
   $OCI rm -f "$cid" >/dev/null 2>&1 || true
   set +e
-  $OCI run --name "$cid" -v "$BUILDDIR":/build:ro -v "$(dirname "$0")":/t:ro \
+  $OCI run --name "$cid" -v "$BUILDDIR":/build:ro -v "$(cd "$(dirname "$0")" && pwd)":/t:ro \
     -e SERIES="$series" -e KABI="$abi" -e KPKG="$pkg" -e KFETCH="$fetch" -e KARCH="$arch" \
     -e DEB="/build/$(basename "$deb")" \
     "$base" /t/_in-container.sh
