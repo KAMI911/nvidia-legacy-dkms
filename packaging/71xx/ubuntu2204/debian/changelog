@@ -2,7 +2,7 @@ nvidia-legacy-71xx (71.86.15-0nvl1~jammy1) jammy; urgency=medium
 
   * Reproducible build of NVIDIA 71.86.15 (71xx legacy series)
     for ubuntu2204 (jammy).
-  * Rendered by render-debian.py from nvidia-legacy-common @ b89e179.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 3d9c46d.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:06:11 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 20:06:41 +0000
 
