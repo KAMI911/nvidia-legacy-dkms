@@ -1,0 +1,8 @@
+nvidia-legacy-470xx (470.256.02-0nvl1~bullseye1) bullseye; urgency=medium
+
+  * Reproducible build of NVIDIA 470.256.02 (470xx legacy series)
+    for debian11 (bullseye).
+  * Rendered by render-debian.py from nvidia-legacy-common @ d2069f6.
+
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 11:53:40 +0000
+

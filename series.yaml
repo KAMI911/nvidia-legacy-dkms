@@ -13,6 +13,8 @@ build:
       ubuntu:
       - amd64
     blocking: true
+    note: "Maxwell/Pascal/Volta; amd64 only; active upstream \u2014 bump version on\
+      \ respin"
   470xx:
     targets:
     - debian11
@@ -27,6 +29,7 @@ build:
       ubuntu:
       - amd64
     blocking: true
+    note: amd64 kernel only (no i386 upstream); i386 libs via multiarch
   390xx:
     targets:
     - debian11
