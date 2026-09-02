@@ -1,0 +1,83 @@
+name: smoke-build
+
+# The fastest real build: one (series, target) end to end in a clean container.
+# verify-run -> assemble-source -> render -> dpkg-source -> dpkg-buildpackage.
+# Uploads the .debs + full log as artifacts. This is where the packaging gets
+# iterated now (not on a laptop).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'common/**'
+      - 'packaging/**'
+      - '.github/workflows/smoke-build.yml'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      series:  { description: series,  default: '390xx' }
+      target:  { description: target,  default: 'debian13' }
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { series: '390xx', target: 'debian13', image: 'debian:trixie' }
+          - { series: '340xx', target: 'debian13', image: 'debian:trixie' }
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: true }
+      - name: cache upstream .run
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/nvidia-legacy
+          key: run-${{ matrix.series }}
+      - name: deps (host)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dpkg-dev xz-utils python3-yaml curl
+      - name: verify + assemble-source + render
+        env:
+          NVL_XZ_LEVEL: '-4'
+        run: |
+          S="${{ matrix.series }}"; T="${{ matrix.target }}"
+          B="$RUNNER_TEMP/b"; mkdir -p "$B"
+          common/scripts/verify-run.sh "$S"
+          common/scripts/assemble-source.sh "$S" "$B"
+          UV=$(python3 -c "import yaml;print(yaml.safe_load(open('common/drivers.yaml'))['series']['$S']['version'])")
+          SRCDIR="nvidia-legacy-${S}-${UV}"
+          tar -C "$B" -xf "$B"/nvidia-legacy-${S}_${UV}.orig.tar.xz
+          python3 common/scripts/render-debian.py --series "$S" --target "$T" --flavour dkms --out "$B/$SRCDIR"
+          ( cd "$B" && dpkg-source --no-check -b "$SRCDIR" )
+          ls -la "$B"/*.dsc
+          echo "B=$B" >> "$GITHUB_ENV"
+          echo "SRCPKG=nvidia-legacy-${S}" >> "$GITHUB_ENV"
+      - name: dpkg-buildpackage (clean container)
+        run: |
+          docker run --rm -v "$B":/b -w /b ${{ matrix.image }} bash -c '
+            set -e; export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq
+            apt-get install -y -qq --no-install-recommends \
+              dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
+            apt-get build-dep -y -qq ./'"$SRCPKG"'_*.dsc
+            dpkg-source --no-check -x '"$SRCPKG"'_*.dsc /tmp/x
+            cd /tmp/x
+            dpkg-buildpackage -b -uc -us
+            cp /tmp/*.deb /tmp/*.buildinfo /tmp/*.changes /b/ 2>/dev/null || true
+            ls -la /b/*.deb
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-${{ matrix.series }}-${{ matrix.target }}
+          path: |
+            ${{ env.B }}/*.deb
+            ${{ env.B }}/*.dsc
+            ${{ env.B }}/*.buildinfo
+            ${{ env.B }}/*.changes
