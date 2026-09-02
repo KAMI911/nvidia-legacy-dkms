@@ -33,8 +33,7 @@ Depends:
  nvidia-legacy-173xx-driver-bin (= ${binary:Version}),
  nvidia-legacy-173xx-kernel-support (= ${binary:Version}),
  nvidia-legacy-173xx-kernel-dkms (= ${binary:Version}),
-Recommends:
- xorg-server-legacy-nvidia-19,
+Recommends: xorg-server-legacy-nvidia-19
 Provides: nvidia-legacy-driver
 Conflicts: nvidia-driver, nvidia-legacy-driver
 Replaces: nvidia-legacy-driver

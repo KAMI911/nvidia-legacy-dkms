@@ -34,8 +34,6 @@ Depends:
  xserver-xorg-video-nvidia-legacy-470xx (= ${binary:Version}),
  nvidia-legacy-470xx-kernel-support (= ${binary:Version}),
  nvidia-legacy-470xx-kernel-dkms (= ${binary:Version}),
-Recommends:
- nvidia-legacy-470xx-vdpau-driver,
 Provides: nvidia-legacy-driver
 Conflicts: nvidia-driver, nvidia-legacy-driver
 Replaces: nvidia-legacy-driver
@@ -65,14 +63,6 @@ Description: NVIDIA legacy 470.256.02 driver — Xorg driver
  The nvidia_drv.so X.Org video driver from the 470.256.02 release.
  Officially targets X server video driver ABI <= 25.
 
-Package: nvidia-legacy-470xx-vdpau-driver
-Architecture: amd64 i386
-Multi-Arch: same
-Section: non-free/libs
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Provides: vdpau-driver
-Description: NVIDIA legacy 470.256.02 driver — VDPAU backend
- libvdpau_nvidia.so, the VDPAU hardware video acceleration backend.
 
 Package: nvidia-legacy-470xx-driver-libs
 Architecture: amd64 i386
@@ -83,6 +73,7 @@ Provides:
  nvidia-legacy-470xx-driver-libs-nonglvnd,
  libgl1-nvidia-glx,
  libgl1-nvidia-legacy-470xx-glx,
+ vdpau-driver,
  libglx-nvidia,
 Description: NVIDIA legacy 470.256.02 driver — runtime libraries
  Every shared library from the NVIDIA 470.256.02 userspace: libGL / libGLX_nvidia

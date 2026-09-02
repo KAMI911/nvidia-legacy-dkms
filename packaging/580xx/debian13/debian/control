@@ -34,8 +34,6 @@ Depends:
  xserver-xorg-video-nvidia-legacy-580xx (= ${binary:Version}),
  nvidia-legacy-580xx-kernel-support (= ${binary:Version}),
  nvidia-legacy-580xx-kernel-dkms (= ${binary:Version}),
-Recommends:
- nvidia-legacy-580xx-vdpau-driver,
 Provides: nvidia-legacy-driver
 Conflicts: nvidia-driver, nvidia-legacy-driver
 Replaces: nvidia-legacy-driver
@@ -66,14 +64,6 @@ Description: NVIDIA legacy 580.178.04 driver — Xorg driver
  The nvidia_drv.so X.Org video driver from the 580.178.04 release.
  Officially targets X server video driver ABI <= 25.
 
-Package: nvidia-legacy-580xx-vdpau-driver
-Architecture: amd64
-Multi-Arch: same
-Section: non-free/libs
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Provides: vdpau-driver
-Description: NVIDIA legacy 580.178.04 driver — VDPAU backend
- libvdpau_nvidia.so, the VDPAU hardware video acceleration backend.
 
 Package: nvidia-legacy-580xx-driver-libs
 Architecture: amd64
@@ -84,6 +74,7 @@ Provides:
  nvidia-legacy-580xx-driver-libs-nonglvnd,
  libgl1-nvidia-glx,
  libgl1-nvidia-legacy-580xx-glx,
+ vdpau-driver,
  libglx-nvidia,
 Description: NVIDIA legacy 580.178.04 driver — runtime libraries
  Every shared library from the NVIDIA 580.178.04 userspace: libGL / libGLX_nvidia

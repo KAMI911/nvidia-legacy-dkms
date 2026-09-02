@@ -33,9 +33,7 @@ Depends:
  nvidia-legacy-304xx-driver-bin (= ${binary:Version}),
  nvidia-legacy-304xx-kernel-support (= ${binary:Version}),
  nvidia-legacy-304xx-kernel-dkms (= ${binary:Version}),
-Recommends:
- nvidia-legacy-304xx-vdpau-driver,
- xorg-server-legacy-nvidia-23,
+Recommends: xorg-server-legacy-nvidia-23
 Provides: nvidia-legacy-driver
 Conflicts: nvidia-driver, nvidia-legacy-driver
 Replaces: nvidia-legacy-driver
@@ -64,14 +62,6 @@ Description: NVIDIA legacy 304.137 driver — utilities
  nvidia-persistenced and the GTK backends for the 304.137 driver.
 
 
-Package: nvidia-legacy-304xx-vdpau-driver
-Architecture: amd64 i386
-Multi-Arch: same
-Section: non-free/libs
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Provides: vdpau-driver
-Description: NVIDIA legacy 304.137 driver — VDPAU backend
- libvdpau_nvidia.so, the VDPAU hardware video acceleration backend.
 
 Package: nvidia-legacy-304xx-driver-libs
 Architecture: amd64 i386
@@ -82,6 +72,7 @@ Provides:
  nvidia-legacy-304xx-driver-libs-nonglvnd,
  libgl1-nvidia-glx,
  libgl1-nvidia-legacy-304xx-glx,
+ vdpau-driver,
  libglx-nvidia,
 Description: NVIDIA legacy 304.137 driver — runtime libraries
  Every shared library from the NVIDIA 304.137 userspace: libGL / libGLX_nvidia
