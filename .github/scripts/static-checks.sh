@@ -53,7 +53,8 @@ if [ $# -eq 2 ]; then
   tree="$ROOT/packaging/$series/$target"
   python3 "$COMMON/scripts/render-debian.py" --series "$series" --target "$target" \
     --flavour dkms --out "$tree" || bad "render failed"
-  if command -v lintian >/dev/null && [ -f "$ROOT/../build/nvidia-legacy-${series}_"*.dsc ]; then
+  dsc=$(ls "$ROOT"/../build/nvidia-legacy-"${series}"_*.dsc 2>/dev/null | head -1 || true)
+  if command -v lintian >/dev/null && [ -n "$dsc" ]; then
     lintian -I --pedantic "$ROOT/../build/nvidia-legacy-${series}_"*.changes 2>/dev/null \
       | tee /tmp/lintian.txt
     grep -E '^E:' /tmp/lintian.txt && bad "lintian errors"

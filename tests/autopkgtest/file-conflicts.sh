@@ -22,7 +22,7 @@ for our in $(dpkg -l "nvidia-legacy-${SERIES}-*" "libgl1-nvidia-legacy-${SERIES}
 done
 
 echo ":: GLX provider"
-if [ -e /usr/lib/*/libGLX_nvidia.so.0 ] || update-alternatives --query glx >/dev/null 2>&1; then
+if ls /usr/lib/*/libGLX_nvidia.so.0 >/dev/null 2>&1 || update-alternatives --query glx >/dev/null 2>&1; then
   echo "  glvnd/alternatives present"
 else
   echo "  NOTE: no glvnd libGLX_nvidia and no glx alternative — legacy non-glvnd path"
