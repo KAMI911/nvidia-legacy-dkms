@@ -35,7 +35,9 @@ jobs:
         with: { submodules: true }
       - name: cache upstream .run
         uses: actions/cache@v4
-        with: { path: ~/.cache/nvidia-legacy, key: run-${{ matrix.series }} }
+        with:
+          path: ~/.cache/nvidia-legacy
+          key: "run-${{ matrix.series }}"
       - name: host deps
         run: |
           sudo apt-get update -qq
