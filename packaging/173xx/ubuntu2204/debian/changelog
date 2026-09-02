@@ -2,7 +2,7 @@ nvidia-legacy-173xx (173.14.39-0nvl1~jammy1) jammy; urgency=medium
 
   * Reproducible build of NVIDIA 173.14.39 (173xx legacy series)
     for ubuntu2204 (jammy).
-  * Rendered by render-debian.py from nvidia-legacy-common @ ed38c90.
+  * Rendered by render-debian.py from nvidia-legacy-common @ be7466f.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:29:11 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:32:25 +0000
 

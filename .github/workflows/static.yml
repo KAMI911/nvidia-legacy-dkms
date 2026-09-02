@@ -24,12 +24,4 @@ jobs:
       - name: codespell
         run: codespell --skip='.git,*.run' -L crate,ba,te || true
       - name: render sanity (all combos)
-        run: |
-          python3 -c '
-          import json,subprocess
-          m=json.loads(subprocess.check_output(["python3",".github/scripts/gen-matrix.py"]))
-          for c in m["include"]:
-              subprocess.check_call(["python3","common/scripts/render-debian.py",
-                "--series",c["series"],"--target",c["target"],
-                "--flavour","dkms","--out",f"/tmp/r/{c[\"series\"]}/{c[\"target\"]}"])
-          '
+        run: python3 .github/scripts/render-all.py --flavour dkms

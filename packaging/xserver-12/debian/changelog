@@ -2,4 +2,4 @@ xorg-server-legacy-nvidia-12 (1.12.4-0nvl1) unstable; urgency=medium
 
   * Private xorg-server 1.12.4 (video ABI 12) for NVIDIA 96xx.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:29:11 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 12:32:25 +0000
