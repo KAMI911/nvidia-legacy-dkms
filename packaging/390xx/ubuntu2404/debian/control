@@ -33,7 +33,7 @@ Description: NVIDIA legacy 390.157 driver metapackage (Fermi, Kepler (GeForce 40
  UPSTREAM STATUS: Upstream EOL 2022-12. Community-patched for newer kernels/Xorg.
 
 Package: nvidia-legacy-390xx-driver-libs
-Architecture: amd64
+Architecture: amd64 i386
 Multi-Arch: same
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Provides: nvidia-legacy-390xx-driver-libs-nonglvnd
@@ -50,7 +50,7 @@ Description: NVIDIA legacy 390.157 driver — utilities
  the nvidia-persistenced daemon for the 390.157 driver.
 
 Package: libgl1-nvidia-legacy-390xx-glx
-Architecture: amd64
+Architecture: amd64 i386
 Multi-Arch: same
 Section: non-free/libs
 Depends: ${misc:Depends}, ${shlibs:Depends}, nvidia-legacy-390xx-driver-libs (= ${binary:Version})
@@ -71,7 +71,7 @@ Description: NVIDIA legacy 390.157 driver — Xorg driver
  Officially targets X server video driver ABI <= 25.
 
 Package: nvidia-legacy-390xx-vdpau-driver
-Architecture: amd64
+Architecture: amd64 i386
 Multi-Arch: same
 Section: non-free/libs
 Depends: ${misc:Depends}, ${shlibs:Depends}
