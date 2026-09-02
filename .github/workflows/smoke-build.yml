@@ -28,8 +28,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { series: '390xx', target: 'debian13', image: 'debian:trixie' }
-          - { series: '340xx', target: 'debian13', image: 'debian:trixie' }
+          - { series: '390xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '390xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '340xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '470xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '580xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '580xx-open', target: 'debian13', image: 'debian:trixie' }
+          - { series: '304xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '173xx', target: 'debian13',   image: 'debian:trixie' }
     steps:
       - uses: actions/checkout@v4
         with: { submodules: true }
