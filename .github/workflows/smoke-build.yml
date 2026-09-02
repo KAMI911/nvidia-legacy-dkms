@@ -29,6 +29,7 @@ jobs:
       matrix:
         include:
           - { series: '390xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '390xx', target: 'debian13',   image: 'i386/debian:trixie', arch: 'i386' }
           - { series: '390xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
           - { series: '340xx', target: 'debian13',   image: 'debian:trixie' }
           - { series: '470xx', target: 'debian13',   image: 'debian:trixie' }

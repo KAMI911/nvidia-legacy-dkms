@@ -1,77 +1,90 @@
 name: build-reprotest
 
+# Builds each (series, target) source package, then builds the binaries TWICE
+# in a clean container with a deliberately varied environment, and diffoscopes
+# the two .deb sets. Any difference = the build is not reproducible.
+#
+# SOURCE_DATE_EPOCH is pinned from debian/changelog and the .orig tarball has a
+# fixed mtime, so the .debs must be byte-identical across runs.
+
 on:
+  push:
+    branches: [main]
+    paths: ['common/**', 'packaging/**', '.github/workflows/build-reprotest.yml']
   pull_request:
-  workflow_call:
+  workflow_dispatch:
     inputs:
-      full:
-        type: boolean
-        default: false
+      series: { description: series, default: '390xx' }
+      target: { description: target, default: 'debian13' }
 
 permissions:
   contents: read
 
 jobs:
-  matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: "${{ steps.g.outputs.m }}"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.x' }
-      - run: pip install pyyaml
-      - id: g
-        run: |
-          if [ "${{ inputs.full }}" = "true" ]; then
-            echo "m=$(python3 .github/scripts/gen-matrix.py)" >> "$GITHUB_OUTPUT"
-          else
-            echo "m=$(python3 .github/scripts/gen-matrix.py --series 390xx)" >> "$GITHUB_OUTPUT"
-          fi
-
-  build:
-    needs: matrix
+  reprotest:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+      matrix:
+        include:
+          - { series: '390xx', target: 'debian13', image: 'debian:trixie' }
+          - { series: '340xx', target: 'debian13', image: 'debian:trixie' }
+          - { series: '580xx', target: 'debian13', image: 'debian:trixie' }
     steps:
       - uses: actions/checkout@v4
         with: { submodules: true }
+      - name: cache upstream .run
+        uses: actions/cache@v4
+        with: { path: ~/.cache/nvidia-legacy, key: run-${{ matrix.series }} }
       - name: host deps
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y sbuild schroot debootstrap reprotest diffoscope \
-            devscripts blhc python3-yaml xz-utils curl
-          sudo sbuild-adduser "$USER" || true
-      - name: cache upstream .run
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/nvidia-legacy
-          key: run-${{ matrix.series }}
-      - name: verify upstream blobs
-        run: common/scripts/verify-run.sh ${{ matrix.series }}
-      - name: create chroot
+          sudo apt-get install -y -qq dpkg-dev xz-utils python3-yaml curl diffoscope
+      - name: source package
+        env: { NVL_XZ_LEVEL: '-4' }
         run: |
-          set -e
-          case "${{ matrix.target }}" in
-            debian*)  MIR=http://deb.debian.org/debian ;;
-            ubuntu*)  MIR=http://azure.archive.ubuntu.com/ubuntu ;;
-          esac
-          CN=$(python3 -c "import yaml;print(yaml.safe_load(open('common/drivers.yaml'))['targets']['${{ matrix.target }}']['codename'])")
-          sudo sbuild-createchroot --make-sbuild-tarball=/srv/chroot/${CN}.tar.gz \
-            "$CN" "$(mktemp -d)" "$MIR"
-      - name: build (clean chroot, all arches)
-        run: .github/scripts/sbuild-wrap.sh ${{ matrix.series }} ${{ matrix.target }}
-      - name: reprotest (bit-identical rebuild)
-        run: .github/scripts/reprotest-wrap.sh ${{ matrix.series }} ${{ matrix.target }}
-        continue-on-error: ${{ !matrix.blocking }}
+          S=${{ matrix.series }}; T=${{ matrix.target }}
+          B="$RUNNER_TEMP/b"; mkdir -p "$B"
+          common/scripts/verify-run.sh "$S"
+          common/scripts/assemble-source.sh "$S" "$B"
+          UV=$(python3 -c "import yaml;print(yaml.safe_load(open('common/drivers.yaml'))['series']['$S']['version'])")
+          tar -C "$B" -xf "$B"/nvidia-legacy-${S}_${UV}.orig.tar.xz
+          python3 common/scripts/render-debian.py --series "$S" --target "$T" --flavour dkms --out "$B/nvidia-legacy-${S}-${UV}"
+          ( cd "$B" && dpkg-source --no-check -b "nvidia-legacy-${S}-${UV}" )
+          echo "B=$B" >> "$GITHUB_ENV"
+          echo "SRCPKG=nvidia-legacy-${S}" >> "$GITHUB_ENV"
+      - name: build twice with varied env
+        run: |
+          run_build() {
+            local out="$1"; shift
+            docker run --rm -v "$B":/b "$@" ${{ matrix.image }} bash -c '
+              set -e; export DEBIAN_FRONTEND=noninteractive
+              apt-get update -qq
+              apt-get install -y -qq --no-install-recommends dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
+              apt-get build-dep -y -qq ./'"$SRCPKG"'_*.dsc
+              dpkg-source --no-check -x '"$SRCPKG"'_*.dsc /tmp/x
+              cd /tmp/x && dpkg-buildpackage -b -uc -us
+              mkdir -p /b/'"$out"' && cp /tmp/*.deb /b/'"$out"'/
+            '
+          }
+          run_build A -e TZ=UTC        -e LC_ALL=C.UTF-8
+          run_build B -e TZ=Asia/Tokyo -e LC_ALL=en_US.UTF-8 -e SOURCE_DATE_EPOCH_HINT=vary --hostname repro2
+      - name: diffoscope
+        run: |
+          rc=0
+          for a in "$B"/A/*.deb; do
+            b="$B/B/$(basename "$a")"
+            if ! cmp -s "$a" "$b"; then
+              echo "::error::not reproducible: $(basename "$a")"
+              diffoscope --max-report-size 200000 "$a" "$b" || true
+              rc=1
+            else
+              echo "OK identical: $(basename "$a")"
+            fi
+          done
+          exit $rc
       - uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          name: debs-${{ matrix.series }}-${{ matrix.target }}
-          path: |
-            ../build/*.deb
-            ../build/*.dsc
-            ../build/*.tar.*
-            ../build/*.buildinfo
-            ../build/*.changes
+          name: reprotest-diff-${{ matrix.series }}-${{ matrix.target }}
+          path: ${{ env.B }}
