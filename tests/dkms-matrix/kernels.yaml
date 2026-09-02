@@ -1,6 +1,6 @@
-# DKMS kernel matrix — the distro's own linux-headers metapackage is always
-# installable in a container and pins to that release's current kernel ABI.
-# mainline-sweep + RT entries are the wider non-blocking coverage.
+# DKMS kernel matrix. blocking entries use the distro's linux-headers
+# metapackage (always installable, pins to the release's current ABI).
+# rt / lowlatency + mainline-sweep entries are wider non-blocking coverage.
 
 debian11:
 - abi: 5.10.0-33-amd64
@@ -30,6 +30,12 @@ debian13:
   blocking: true
   fetch: archive
   pkg: linux-headers-686-pae
+  ver: '*'
+- abi: rt-amd64
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-rt-amd64
+  variant: rt
   ver: '*'
 mainline-sweep:
 - abi: 6.12-mainline
@@ -109,4 +115,10 @@ ubuntu2404:
   blocking: true
   fetch: archive
   pkg: linux-headers-generic
+  ver: '*'
+- abi: lowlatency
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-lowlatency
+  variant: lowlatency
   ver: '*'
