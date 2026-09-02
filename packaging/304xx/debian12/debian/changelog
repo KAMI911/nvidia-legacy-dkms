@@ -2,7 +2,7 @@ nvidia-legacy-304xx (304.137-0nvl1~bookworm1) bookworm; urgency=medium
 
   * Reproducible build of NVIDIA 304.137 (304xx legacy series)
     for debian12 (bookworm).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 22bdb95.
+  * Rendered by render-debian.py from nvidia-legacy-common @ b9cd95f.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 07:57:48 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 09:04:06 +0000
 
