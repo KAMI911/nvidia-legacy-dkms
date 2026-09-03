@@ -2,7 +2,7 @@ nvidia-legacy-390xx (390.157-0nvl1~resolute1) resolute; urgency=medium
 
   * Reproducible build of NVIDIA 390.157 (390xx legacy series)
     for ubuntu2604 (resolute).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 36003ed.
+  * Rendered by render-debian.py from nvidia-legacy-common @ b5ce133.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 11:54:26 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 14:08:31 +0000
 
