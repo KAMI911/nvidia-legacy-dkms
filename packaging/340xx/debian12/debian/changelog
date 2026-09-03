@@ -2,7 +2,7 @@ nvidia-legacy-340xx (340.108-0nvl1~bookworm1) bookworm; urgency=medium
 
   * Reproducible build of NVIDIA 340.108 (340xx legacy series)
     for debian12 (bookworm).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 5838ae1.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 14192af.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 14:21:11 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 14:57:32 +0000
 
