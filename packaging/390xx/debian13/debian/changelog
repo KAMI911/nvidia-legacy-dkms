@@ -2,7 +2,7 @@ nvidia-legacy-390xx (390.157-0nvl1~trixie1) trixie; urgency=medium
 
   * Reproducible build of NVIDIA 390.157 (390xx legacy series)
     for debian13 (trixie).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 355d2a8.
+  * Rendered by render-debian.py from nvidia-legacy-common @ d1a7711.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:11:34 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:28:08 +0000
 

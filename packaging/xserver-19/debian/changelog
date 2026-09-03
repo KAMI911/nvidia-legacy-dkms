@@ -2,4 +2,4 @@ xorg-server-legacy-nvidia-19 (1.15.1-0nvl1) unstable; urgency=medium
 
   * Private xorg-server 1.15.1 (video ABI 19) for NVIDIA 173xx.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:11:34 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:28:08 +0000

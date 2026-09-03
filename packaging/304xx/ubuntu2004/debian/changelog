@@ -2,7 +2,7 @@ nvidia-legacy-304xx (304.137-0nvl1~focal1) focal; urgency=medium
 
   * Reproducible build of NVIDIA 304.137 (304xx legacy series)
     for ubuntu2004 (focal).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 355d2a8.
+  * Rendered by render-debian.py from nvidia-legacy-common @ d1a7711.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:11:34 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:28:08 +0000
 
