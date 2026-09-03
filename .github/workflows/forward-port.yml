@@ -36,7 +36,7 @@ jobs:
     outputs:
       series: ${{ steps.s.outputs.list }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - run: pip install pyyaml
@@ -52,7 +52,7 @@ jobs:
       matrix:
         series: ${{ fromJson(needs.matrix.outputs.series) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - name: deps
@@ -81,7 +81,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - uses: actions/download-artifact@v4

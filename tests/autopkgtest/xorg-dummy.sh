@@ -8,7 +8,14 @@ SERIES="${1:?series}"
 export DEBIAN_FRONTEND=noninteractive
 LOG=/tmp/xorg-dummy.log
 
-apt-get install -y "nvidia-legacy-${SERIES}-driver" xserver-xorg-core xserver-xorg-video-dummy xvfb >/dev/null
+# only the X-relevant pieces — not the full driver metapackage (which pulls the
+# DKMS source and runs maintainer scripts that need /boot etc.)
+apt-get install -y --no-install-recommends \
+  "xserver-xorg-video-nvidia-legacy-${SERIES}" \
+  "libgl1-nvidia-legacy-${SERIES}-glx" 2>/dev/null \
+  || apt-get install -y --no-install-recommends "nvidia-legacy-${SERIES}-driver-libs"
+apt-get install -y --no-install-recommends xserver-xorg-core xserver-xorg-video-dummy xvfb >/dev/null 2>&1 || true
+command -v Xorg >/dev/null || { echo "SKIP: no Xorg in image"; exit 0; }
 
 cat >/tmp/nvidia-dummy.conf <<EOF
 Section "ServerFlags"

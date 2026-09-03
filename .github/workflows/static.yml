@@ -17,7 +17,7 @@ jobs:
           apt-get update -qq
           apt-get install -y -qq git python3-yaml shellcheck lintian devscripts \
             blhc dpkg-dev codespell
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: { submodules: true }
       - name: static gate
         run: .github/scripts/static-checks.sh

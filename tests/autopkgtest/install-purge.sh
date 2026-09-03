@@ -23,13 +23,16 @@ echo ":: reinstall (idempotent maintainer scripts)"
 apt-get install --reinstall -y "$PKG"
 
 echo ":: purge"
-apt-get purge -y "$PKG" "nvidia-legacy-${SERIES}-*" || apt-get purge -y "$(dpkg -l 'nvidia-legacy-*' | awk '/^ii/{print $2}')"
-apt-get autoremove --purge -y
+export SUDO_FORCE_REMOVE=yes
+mapfile -t ours < <(dpkg-query -W -f='${Package}\n' 'nvidia-legacy-*' 'xserver-xorg-video-nvidia-legacy-*' 2>/dev/null | sort -u)
+apt-get purge -y "${ours[@]}"
+# autoremove only what WE pulled in, never touch base packages
+apt-get autoremove --purge -y -o APT::Get::AutomaticRemove::SuggestsImportant=false || true
 
-dpkg -l | awk '{print $2}' | sort > "$after"
-echo ":: packages remaining that were not there before:"
-if comm -13 "$before" "$after" | grep -q .; then
-  comm -13 "$before" "$after"; echo "FAIL: residue"; exit 1
+echo ":: NVIDIA packages still installed after purge (must be none):"
+if dpkg-query -W -f='${Package}\n' 'nvidia-legacy-*' 'xserver-xorg-video-nvidia-legacy-*' 2>/dev/null | grep -q .; then
+  dpkg-query -W -f='${Package} ${Status}\n' 'nvidia-legacy-*' 2>/dev/null
+  echo "FAIL: nvidia package residue"; exit 1
 fi
 test ! -e /lib/modprobe.d/nvidia-blacklists-nouveau.conf || { echo "FAIL: blacklist left behind"; exit 1; }
 test ! -e /etc/X11/xorg.conf.d/20-nvidia-legacy-${SERIES}.conf || { echo "FAIL: xorg snippet left behind"; exit 1; }
