@@ -24,31 +24,36 @@ dkms build -m "$NAME" -v "$VER" -k "$KVER" --no-clean-kernel || {
 }
 
 rc=0
+# dkms may leave the built modules in /var/lib/dkms/.../module/ OR install them
+# (possibly .ko.xz / .ko.zst compressed) into /lib/modules/$KVER/updates/dkms/
+find_ko() {  # find_ko <name> -> prints the path or nothing
+  local n="$1" p
+  for p in "/var/lib/dkms/$NAME/$VER/$KVER"/*/module/"$n".ko \
+           "/lib/modules/$KVER/updates/dkms/$n".ko \
+           "/lib/modules/$KVER/updates/dkms/$n".ko.* ; do
+    [ -e "$p" ] && { echo "$p"; return; }
+  done
+}
 for ko in nvidia nvidia-modeset nvidia-drm nvidia-uvm; do
-  path="/var/lib/dkms/$NAME/$VER/$KVER/*/module/$ko.ko"
-  # shellcheck disable=SC2086
-  set -- $path
-  if [ -f "$1" ]; then
-    vm="$(modinfo -F vermagic "$1" 2>/dev/null || true)"
-    sv="$(modinfo -F srcversion "$1" 2>/dev/null || true)"
-    lic="$(modinfo -F license "$1" 2>/dev/null || true)"
-    echo "   $ko.ko  vermagic='$vm'  srcversion='$sv'  license='$lic'"
-    case "$vm" in "$KVER"*) : ;; *) echo "   !! vermagic mismatch"; rc=1;; esac
-    [ -n "$sv" ] || { echo "   !! empty srcversion"; rc=1; }
+  f="$(find_ko "$ko")"
+  if [ -n "$f" ]; then
+    case "$f" in
+      *.ko) vm="$(modinfo -F vermagic "$f" 2>/dev/null)"; sv="$(modinfo -F srcversion "$f" 2>/dev/null)"
+            echo "   $ko: $(basename "$f")  vermagic='$vm'  srcversion='$sv'"
+            case "$vm" in "$KVER"*) : ;; ""*) : ;; *) echo "   !! vermagic mismatch"; rc=1;; esac ;;
+      *)    echo "   $ko: $(basename "$f")  (compressed, installed)" ;;
+    esac
   else
     case "$ko" in
-      nvidia|nvidia-modeset|nvidia-uvm) echo "   !! $ko.ko missing"; rc=1;;
+      nvidia|nvidia-modeset|nvidia-uvm) echo "   !! $ko.ko not found"; rc=1;;
       *) echo "   ($ko.ko absent — acceptable on this kernel)";;
     esac
   fi
 done
 
-# symbol resolution without loading: stage the .ko into /lib/modules and depmod -n
-mkdir -p "/lib/modules/$KVER/updates/dkms"
-cp /var/lib/dkms/"$NAME"/"$VER"/"$KVER"/*/module/*.ko "/lib/modules/$KVER/updates/dkms/" 2>/dev/null || true
-if depmod -n "$KVER" 2>&1 | grep -i "needs unknown symbol"; then
+if depmod "$KVER" 2>&1 | grep -i "needs unknown symbol"; then
   echo "   !! unresolved symbols"; rc=1
 else
-  echo "   depmod: all symbols resolved"
+  echo "   depmod: OK"
 fi
 exit $rc

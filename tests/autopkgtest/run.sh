@@ -18,7 +18,12 @@ $OCI run --name "$cid" -v "$BUILDDIR":/build:ro -v "$(cd "$(dirname "$0")" && pw
   -e SERIES="$series" "$base" bash -c '
     set -e; export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq /build/*.deb 2>/dev/null || { dpkg -i /build/*.deb; apt-get -f install -y -qq; }
+    apt-get install -y -qq dpkg-dev
+    # a local file:// apt repo so the sub-tests can apt-get install BY NAME
+    mkdir -p /localrepo && cp /build/*.deb /localrepo/
+    ( cd /localrepo && dpkg-scanpackages -m . | gzip -9 > Packages.gz )
+    echo "deb [trusted=yes] file:/localrepo ./" > /etc/apt/sources.list.d/nvl.list
+    apt-get update -qq
     fail=0
     for t in install-purge file-conflicts xorg-dummy; do
       echo "===== $t ====="
