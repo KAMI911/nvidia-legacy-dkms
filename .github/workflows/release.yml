@@ -26,7 +26,12 @@ jobs:
       - uses: actions/checkout@v5
         with: { submodules: true }
       - name: osc
+        env:
+          OSC_USER: ${{ secrets.OSC_USER }}
+          OSC_PASS: ${{ secrets.OSC_PASS }}
         run: |
+          test -n "$OSC_USER" && test -n "$OSC_PASS" || {
+            echo "::error::OSC_USER / OSC_PASS secrets not set — see _obs/README.md"; exit 1; }
           sudo apt-get update -qq && sudo apt-get install -y -qq osc python3-yaml dpkg-dev xz-utils curl
           mkdir -p ~/.config/osc
           APIURL="${{ vars.OSC_APIURL || 'https://api.opensuse.org' }}"
@@ -34,9 +39,12 @@ jobs:
           [general]
           apiurl = $APIURL
           [$APIURL]
-          user = ${{ secrets.OSC_USER }}
-          pass = ${{ secrets.OSC_PASS }}
+          user = $OSC_USER
+          pass = $OSC_PASS
+          credentials_mgr_class = osc.credentials.PlaintextConfigFileCredentialsManager
           EOF
+          chmod 600 ~/.config/osc/oscrc
+          osc -A "$APIURL" whois
       - name: render + assemble source packages for every green (series,target)
         env: { NVL_XZ_LEVEL: '-9e' }
         run: |
