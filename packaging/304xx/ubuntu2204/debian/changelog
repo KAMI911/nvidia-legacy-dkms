@@ -2,7 +2,7 @@ nvidia-legacy-304xx (304.137-0nvl1~jammy1) jammy; urgency=medium
 
   * Reproducible build of NVIDIA 304.137 (304xx legacy series)
     for ubuntu2204 (jammy).
-  * Rendered by render-debian.py from nvidia-legacy-common @ b5ce133.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 5838ae1.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 14:08:31 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 14:21:11 +0000
 
