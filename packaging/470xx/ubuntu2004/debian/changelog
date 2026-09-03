@@ -2,7 +2,7 @@ nvidia-legacy-470xx (470.256.02-0nvl1~focal1) focal; urgency=medium
 
   * Reproducible build of NVIDIA 470.256.02 (470xx legacy series)
     for ubuntu2004 (focal).
-  * Rendered by render-debian.py from nvidia-legacy-common @ da1cf79.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 76a9953.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 04:13:24 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 04:18:49 +0000
 
