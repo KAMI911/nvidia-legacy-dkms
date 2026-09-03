@@ -36,13 +36,11 @@ if ! osc api "/source/$PROJECT/$pkg/_meta" >/dev/null 2>&1; then
 fi
 
 wd="$(mktemp -d)"; trap 'rm -rf "$wd"' EXIT
-pdir="$wd"
-# check the (possibly empty, just-created) package out INTO $wd — this writes the
-# .osc/ metadata `osc addremove`/`osc ci` need. `--current-dir` avoids the
-# $wd/$PROJECT/$pkg nesting `osc co` uses by default.
-( cd "$wd" && osc co --current-dir "$PROJECT" "$pkg" ) \
-  || { echo "osc co failed for $PROJECT/$pkg"; exit 1; }
-test -d "$pdir/.osc" || { echo "no .osc working copy after checkout"; exit 1; }
+# plain `osc co PROJECT PKG` creates ./PROJECT/PKG/ with the .osc/ metadata that
+# `osc addremove` / `osc ci` need.
+( cd "$wd" && osc co "$PROJECT" "$pkg" ) || { echo "osc co failed for $PROJECT/$pkg"; exit 1; }
+pdir="$wd/$PROJECT/$pkg"
+test -d "$pdir/.osc" || { echo "no .osc working copy at $pdir"; exit 1; }
 
 cp "$BUILDDIR/${pkg}_"*.orig*.tar.* "$pdir/"
 

@@ -1,9 +1,8 @@
 name: release
 
-# On a version tag: run the full gate (static + smoke-build + reprotest + ci),
-# then, only if green, push the CI-rendered source packages to OBS where they
-# build in a clean chroot and land in the apt repo. Publishing is behind the
-# 'obs' environment (manual approval + OSC_* secrets).
+# On a version tag: run the full gate (static + smoke-build + reprotest), then,
+# only if green, push the CI-rendered source packages to OBS (build on / publish
+# off) via obs-push.yml. Publishing per repo stays a manual step.
 
 on:
   push:
@@ -14,68 +13,11 @@ permissions:
   contents: read
 
 jobs:
-  static:        { uses: ./.github/workflows/static.yml }
-  smoke:         { uses: ./.github/workflows/smoke-build.yml }
-  reprotest:     { uses: ./.github/workflows/build-reprotest.yml }
+  static:    { uses: ./.github/workflows/static.yml }
+  smoke:     { uses: ./.github/workflows/smoke-build.yml }
+  reprotest: { uses: ./.github/workflows/build-reprotest.yml }
 
   publish:
     needs: [static, smoke, reprotest]
-    runs-on: ubuntu-latest
-    environment: obs
-    steps:
-      - uses: actions/checkout@v5
-        with: { submodules: true }
-      - name: osc
-        env:
-          OSC_USER: ${{ secrets.OSC_USER }}
-          OSC_PASS: ${{ secrets.OSC_PASS }}
-        run: |
-          test -n "$OSC_USER" && test -n "$OSC_PASS" || {
-            echo "::error::OSC_USER / OSC_PASS secrets not set — see _obs/README.md"; exit 1; }
-          sudo apt-get update -qq && sudo apt-get install -y -qq osc python3-yaml dpkg-dev xz-utils curl
-          mkdir -p ~/.config/osc
-          APIURL="${{ vars.OSC_APIURL || 'https://api.opensuse.org' }}"
-          cat > ~/.config/osc/oscrc <<EOF
-          [general]
-          apiurl = $APIURL
-          [$APIURL]
-          user = $OSC_USER
-          pass = $OSC_PASS
-          credentials_mgr_class = osc.credentials.PlaintextConfigFileCredentialsManager
-          EOF
-          chmod 600 ~/.config/osc/oscrc
-          osc -A "$APIURL" whois
-      - name: render + assemble source packages for every green (series,target)
-        env: { NVL_XZ_LEVEL: '-9e' }
-        run: |
-          B="$RUNNER_TEMP/src"; mkdir -p "$B"; echo "BUILDDIR=$B" >> "$GITHUB_ENV"
-          python3 - <<'PY'
-          import subprocess, yaml, os, pathlib
-          root = pathlib.Path('.')
-          build = yaml.safe_load(open('series.yaml'))['build']
-          drv = yaml.safe_load(open('common/drivers.yaml'))
-          B = os.environ['RUNNER_TEMP'] + '/src'
-          for s, cfg in build.items():
-              if cfg.get('blocking') is False:
-                  continue                      # experimental/best-effort ship separately
-              subprocess.check_call(['common/scripts/verify-run.sh', s])
-              subprocess.check_call(['common/scripts/assemble-source.sh', s, B])
-              uv = drv['series'][s]['version']
-              for t in cfg['targets']:
-                  sd = f'{B}/nvidia-legacy-{s}-{uv}'
-                  subprocess.run(['rm','-rf',sd])
-                  import tarfile
-                  with tarfile.open(f'{B}/nvidia-legacy-{s}_{uv}.orig.tar.xz') as tf:
-                      tf.extractall(B)
-                  subprocess.check_call(['python3','common/scripts/render-debian.py',
-                      '--series',s,'--target',t,'--flavour','dkms','--out',sd])
-                  subprocess.check_call(['dpkg-source','--no-check','-b',f'nvidia-legacy-{s}-{uv}'], cwd=B)
-          PY
-      - name: sync to OBS
-        env:
-          OBS_PROJECT: ${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}
-        run: |
-          for s in $(python3 -c "import yaml;[print(k) for k,v in yaml.safe_load(open('series.yaml'))['build'].items() if v.get('blocking') is not False]"); do
-            BUILDDIR="$BUILDDIR" tools/obs-sync.sh "$s"
-          done
-      - run: echo "OBS builds; packages stay publish=disable until 'obs-set-publish.py <series> <target> enable' after 'osc results' is green."
+    uses: ./.github/workflows/obs-push.yml
+    secrets: inherit
