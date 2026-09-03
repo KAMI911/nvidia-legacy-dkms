@@ -17,17 +17,17 @@
   <debuginfo><disable/></debuginfo>
 
   <repository name="Debian_13">
-    <path project="Debian:13" repository="main"/>
+    <path project="Debian:13" repository="standard"/>
     <arch>x86_64</arch>
     <arch>i586</arch>
   </repository>
   <repository name="Debian_12">
-    <path project="Debian:12" repository="main"/>
+    <path project="Debian:12" repository="standard"/>
     <arch>x86_64</arch>
     <arch>i586</arch>
   </repository>
   <repository name="Debian_11">
-    <path project="Debian:11" repository="main"/>
+    <path project="Debian:11" repository="standard"/>
     <arch>x86_64</arch>
     <arch>i586</arch>
   </repository>
