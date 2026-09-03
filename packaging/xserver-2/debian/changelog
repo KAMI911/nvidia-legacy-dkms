@@ -2,4 +2,4 @@ xorg-server-legacy-nvidia-2 (1.4.2-0nvl1) unstable; urgency=medium
 
   * Private xorg-server 1.4.2 (video ABI 2) for NVIDIA 71xx.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Wed, 02 Sep 2026 21:13:08 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 03:49:54 +0000

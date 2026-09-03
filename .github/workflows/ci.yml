@@ -65,7 +65,7 @@ jobs:
 
       - name: dkms-matrix (compile module against kernels.yaml)
         run: BUILDDIR="$BUILDDIR" tests/dkms-matrix/run.sh "$SERIES" "$TARGET"
-        # 390.157 vs Linux 6.12 conftest integration is still being validated
+        # 390xx builds on 6.12 now (0022 patch); keep non-blocking until 340/470/580 verified too
         # (docs/module-build-status.md); not gating yet.
         continue-on-error: true
 
