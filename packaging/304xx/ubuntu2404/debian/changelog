@@ -2,7 +2,7 @@ nvidia-legacy-304xx (304.137-0nvl1~noble1) noble; urgency=medium
 
   * Reproducible build of NVIDIA 304.137 (304xx legacy series)
     for ubuntu2404 (noble).
-  * Rendered by render-debian.py from nvidia-legacy-common @ d1a7711.
+  * Rendered by render-debian.py from nvidia-legacy-common @ b980bfb.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:28:08 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 07:54:15 +0000
 
