@@ -11,6 +11,10 @@ on:
       series:
         description: 'space-separated series, or "all" for every blocking series'
         default: 'all'
+      project_config:
+        description: 'also apply _obs project meta + prjconf first'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -43,6 +47,18 @@ jobs:
           EOF
           chmod 600 ~/.config/osc/oscrc
           osc -A "$APIURL" whois
+
+      - name: apply project meta + prjconf
+        # workflow_call (release.yml) has no inputs -> default true
+        if: ${{ github.event.inputs.project_config != 'false' }}
+        env:
+          OBS_PROJECT: ${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}
+        run: |
+          _obs/render.sh prj > /tmp/prj-meta.xml
+          echo "--- project meta ($OBS_PROJECT) ---"; cat /tmp/prj-meta.xml
+          osc meta prj     "$OBS_PROJECT" -F /tmp/prj-meta.xml
+          osc meta prjconf "$OBS_PROJECT" -F _obs/prjconf
+          echo "project config applied"
 
       - name: pick series
         id: pick

@@ -37,14 +37,21 @@ single deterministic source:
 
 ## Bootstrap
 
+Once the `OSC_*` secrets/vars are set (see `../BOOTSTRAP.md` §2), everything is
+a GitHub Action — no local `osc` needed:
+
+| Action | Does |
+|---|---|
+| **obs-push** (`workflow_dispatch`) | applies project meta + prjconf, then renders + pushes the selected series' packages. `project_config: false` to skip the meta step; `series: 390xx` to push just one. |
+| **release** (tag `v*`) | full gate (static+smoke+reprotest) → `obs-push` |
+
+Local fallback (needs `osc login`):
+
 ```sh
-export OBS_PROJECT=home:$(osc whois | cut -d: -f1):nvidia-legacy:dkms   # or set by hand
+export OBS_PROJECT=home:$(osc whois | cut -d: -f1):nvidia-legacy:dkms
 osc meta prj      "$OBS_PROJECT" -F <(_obs/render.sh prj)
 osc meta prjconf  "$OBS_PROJECT" -F _obs/prjconf
 ```
-
-Packages are created on first `obs-sync.sh` run (CI, or by hand after a local
-`release.yml`-style render). See `../BOOTSTRAP.md` §3.
 
 ## Repositories (build targets)
 
