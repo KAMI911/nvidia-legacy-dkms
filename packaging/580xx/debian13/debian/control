@@ -70,7 +70,9 @@ Package: nvidia-legacy-580xx-driver-libs
 Architecture: amd64
 Multi-Arch: same
 Section: non-free/libs
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends:
+ ${misc:Depends}, ${shlibs:Depends},
+ libgl1, libglx0, libegl1,
 Provides:
  nvidia-legacy-580xx-driver-libs-nonglvnd,
  libgl1-nvidia-glx,

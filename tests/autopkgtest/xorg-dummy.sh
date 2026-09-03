@@ -8,9 +8,15 @@ set -eu
 SERIES="${1:?series}"
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get install -y -qq --no-install-recommends \
-  "xserver-xorg-video-nvidia-legacy-${SERIES}" xserver-xorg-core binutils >/dev/null 2>&1 \
-  || { echo "SKIP: this series ships no xserver-xorg-video package (legacy-xserver path)"; exit 0; }
+if ! apt-cache show "xserver-xorg-video-nvidia-legacy-${SERIES}" >/dev/null 2>&1; then
+  echo "SKIP: this series ships no xserver-xorg-video package (legacy-xserver path)"
+  exit 0
+fi
+if ! apt-get install -y -qq --no-install-recommends \
+     "xserver-xorg-video-nvidia-legacy-${SERIES}" xserver-xorg-core binutils; then
+  echo "FAIL: could not install xserver-xorg-video-nvidia-legacy-${SERIES}"
+  exit 1
+fi
 
 DRV=$(dpkg -L "xserver-xorg-video-nvidia-legacy-${SERIES}" | grep 'nvidia_drv\.so$' | head -1)
 [ -n "$DRV" ] && [ -e "$DRV" ] || { echo "FAIL: nvidia_drv.so not installed"; exit 1; }

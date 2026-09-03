@@ -24,14 +24,22 @@ apt-get install --reinstall -y "$PKG"
 
 echo ":: purge"
 export SUDO_FORCE_REMOVE=yes
-mapfile -t ours < <(dpkg-query -W -f='${Package}\n' 'nvidia-legacy-*' 'xserver-xorg-video-nvidia-legacy-*' 2>/dev/null | sort -u)
-apt-get purge -y "${ours[@]}"
+# only genuinely-installed real packages — dpkg-query -W also prints virtual
+# names (e.g. the kernel-dkms package Provides nvidia-legacy-<s>-kernel-module),
+# and feeding those to apt-get purge aborts with "Unable to locate package".
+mapfile -t ours < <(dpkg-query -W -f='${db:Status-Abbrev}\t${Package}\n' \
+  'nvidia-legacy-*' 'xserver-xorg-video-nvidia-legacy-*' 2>/dev/null \
+  | awk -F'\t' '$1 ~ /^.i/ {print $2}' | sort -u)
+[ "${#ours[@]}" -gt 0 ] && apt-get purge -y "${ours[@]}"
 # autoremove only what WE pulled in, never touch base packages
 apt-get autoremove --purge -y -o APT::Get::AutomaticRemove::SuggestsImportant=false || true
 
 echo ":: NVIDIA packages still installed after purge (must be none):"
-if dpkg-query -W -f='${Package}\n' 'nvidia-legacy-*' 'xserver-xorg-video-nvidia-legacy-*' 2>/dev/null | grep -q .; then
-  dpkg-query -W -f='${Package} ${Status}\n' 'nvidia-legacy-*' 2>/dev/null
+residue=$(dpkg-query -W -f='${db:Status-Abbrev}\t${Package}\n' \
+  'nvidia-legacy-*' 'xserver-xorg-video-nvidia-legacy-*' 2>/dev/null \
+  | awk -F'\t' '$1 ~ /^.i/ || $1 ~ /^.c/ {print $2}')
+if [ -n "$residue" ]; then
+  echo "$residue"
   echo "FAIL: nvidia package residue"; exit 1
 fi
 test ! -e /lib/modprobe.d/nvidia-blacklists-nouveau.conf || { echo "FAIL: blacklist left behind"; exit 1; }

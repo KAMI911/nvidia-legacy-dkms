@@ -2,7 +2,7 @@ nvidia-legacy-390xx (390.157-0nvl1~noble1) noble; urgency=medium
 
   * Reproducible build of NVIDIA 390.157 (390xx legacy series)
     for ubuntu2404 (noble).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 76a9953.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 355d2a8.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 04:18:49 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:11:34 +0000
 

@@ -2,7 +2,7 @@ nvidia-legacy-340xx (340.108-0nvl1~focal1) focal; urgency=medium
 
   * Reproducible build of NVIDIA 340.108 (340xx legacy series)
     for ubuntu2004 (focal).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 76a9953.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 355d2a8.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 04:18:49 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 05:11:34 +0000
 
