@@ -2,4 +2,4 @@ xorg-server-legacy-nvidia-23 (1.19.7-0nvl1) unstable; urgency=medium
 
   * Private xorg-server 1.19.7 (video ABI 23) for NVIDIA 304xx.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 03:49:54 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 04:13:24 +0000
