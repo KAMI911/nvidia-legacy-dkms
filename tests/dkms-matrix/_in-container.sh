@@ -9,7 +9,14 @@ apt-get install -y -qq --no-install-recommends \
   dkms build-essential kmod "$KPKG" dpkg-dev 2>/dev/null || {
     echo "headers $KPKG not installable"; exit 77; }
 
-apt-get install -y -qq "$DEB" || dpkg -i "$DEB" || { apt-get -f install -y -qq; dpkg -i "$DEB"; }
+# Installing the dkms .deb runs its postinst, which tries to build for EVERY
+# installed kernel. That may fail here (e.g. an RT kernel we don't support yet)
+# — don't let it abort the script; the explicit `dkms build -k $KVER` below is
+# the authority for THIS kernel and dumps make.log on failure.
+apt-get install -y -qq "$DEB" || dpkg -i "$DEB" || apt-get -f install -y -qq || true
+dpkg -i "$DEB" >/dev/null 2>&1 || true
+dpkg-query -W -f='${Status}\n' "nvidia-legacy-${SERIES}-kernel-dkms" 2>/dev/null | grep -qE 'unpacked|installed' \
+  || { echo "kernel-dkms .deb did not unpack"; exit 1; }
 
 NAME="nvidia-legacy-${SERIES}"
 VER="$(dpkg-query -W -f='${Version}' "${NAME}-kernel-dkms" | sed 's/-[^-]*$//; s/.*://')"
