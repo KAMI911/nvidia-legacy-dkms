@@ -1,33 +1,24 @@
 # Project config for home:<login>:nvidia-legacy:dkms
-# (no tokens here — apply verbatim with `osc meta prjconf <project> -F prjconf`)
-# Focus: determinism + Debian/Ubuntu native tooling.
+# (no tokens — apply verbatim: osc meta prjconf <project> -F prjconf)
+#
+# All repositories are Debian/Ubuntu, so no %if guard is needed. The Debian/
+# Ubuntu base projects already set Type/Repotype; we restate them for clarity
+# and add the build-time helpers debootstrap's minimal set lacks.
 
-%if "%_repository" =~ "Debian" || "%_repository" =~ "Ubuntu"
 Type: dsc
 Repotype: debian
 Buildengine: debootstrap
 Patterntype: none
 
-# Reproducibility knobs
-BuildFlags: obsproduct:disable
-BuildFlags: nochecks:0
-# SOURCE_DATE_EPOCH is set per-package by debhelper from debian/changelog — do
-# not pin it here or it would clamp every package to the same date.
-Environment: DEB_BUILD_OPTIONS "reproducible=+all nostrip=0 parallel=4"
-Environment: TZ "UTC"
-Environment: LC_ALL "C.UTF-8"
-
-# Never let a build reach the network.
-BuildFlags: offline
-
 Support: ca-certificates
 Support: xz-utils
-Support: dh-dkms
 Support: dpkg-dev
 Support: debhelper
+Support: dh-dkms
 Support: quilt
-%endif
 
-# Keep the same toolchain versions per distro release for byte-stable output;
-# pin via the distro's own frozen archive (Debian point releases / Ubuntu -updates
-# snapshot). Document the snapshot timestamp in each release's .buildinfo.
+# Determinism: UTC + stable locale. SOURCE_DATE_EPOCH is set per package by
+# debhelper from debian/changelog — never pin it here.
+Environment: TZ "UTC"
+Environment: LC_ALL "C.UTF-8"
+Environment: DEB_BUILD_OPTIONS "reproducible=+all parallel=4"
