@@ -5,9 +5,9 @@
 Edits the OBS package meta so <repository-for-target> has <publish><enable/> or
 <disable/>. Uses `osc meta pkg -e` semantics via a fetch/modify/put cycle.
 """
-import subprocess, sys, xml.etree.ElementTree as ET, pathlib
+import os, subprocess, sys, xml.etree.ElementTree as ET, pathlib
 
-PROJECT = "home:kami911:nvidia-legacy:dkms"
+PROJECT = os.environ.get("OBS_PROJECT", "home:KAMI911:nvidia-legacy:dkms")
 REPO = {
     "debian11": "Debian_11", "debian12": "Debian_12", "debian13": "Debian_13",
     "ubuntu2004": "xUbuntu_20.04", "ubuntu2204": "xUbuntu_22.04", "ubuntu2404": "xUbuntu_24.04",

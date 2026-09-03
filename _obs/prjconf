@@ -1,4 +1,5 @@
-# Project config for home:kami911:nvidia-legacy:dkms
+# Project config for home:<login>:nvidia-legacy:dkms
+# (no tokens here — apply verbatim with `osc meta prjconf <project> -F prjconf`)
 # Focus: determinism + Debian/Ubuntu native tooling.
 
 %if "%_repository" =~ "Debian" || "%_repository" =~ "Ubuntu"
@@ -10,7 +11,8 @@ Patterntype: none
 # Reproducibility knobs
 BuildFlags: obsproduct:disable
 BuildFlags: nochecks:0
-Environment: SOURCE_DATE_EPOCH ""   # injected per-package from changelog by debhelper
+# SOURCE_DATE_EPOCH is set per-package by debhelper from debian/changelog — do
+# not pin it here or it would clamp every package to the same date.
 Environment: DEB_BUILD_OPTIONS "reproducible=+all nostrip=0 parallel=4"
 Environment: TZ "UTC"
 Environment: LC_ALL "C.UTF-8"

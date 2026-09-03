@@ -64,8 +64,10 @@ jobs:
                   subprocess.check_call(['dpkg-source','--no-check','-b',f'nvidia-legacy-{s}-{uv}'], cwd=B)
           PY
       - name: sync to OBS
+        env:
+          OBS_PROJECT: ${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}
         run: |
           for s in $(python3 -c "import yaml;[print(k) for k,v in yaml.safe_load(open('series.yaml'))['build'].items() if v.get('blocking') is not False]"); do
-            BUILDDIR="$BUILDDIR" tools/obs-sync.sh "$s" --project "${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}"
+            BUILDDIR="$BUILDDIR" tools/obs-sync.sh "$s"
           done
-      - run: echo "OBS builds + publishes; watch 'osc results ${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}'"
+      - run: echo "OBS builds; packages stay publish=disable until 'obs-set-publish.py <series> <target> enable' after 'osc results' is green."

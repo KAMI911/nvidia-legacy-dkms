@@ -1,14 +1,20 @@
-<project name="home:kami911:nvidia-legacy:dkms">
+<project name="@OBS_PROJECT@">
   <title>NVIDIA legacy drivers — DKMS (Debian &amp; Ubuntu, reproducible)</title>
   <description>
     Reproducible DKMS packages for every legacy NVIDIA driver series
-    (71/96/173/304/340/390/470xx). Source packages are rendered and
-    checksum-pinned by CI in https://github.com/kami911/nvidia-legacy-dkms ;
+    (71/96/173/304/340/390/470/580xx). Source packages are rendered and
+    checksum-pinned by CI in https://github.com/KAMI911/nvidia-legacy-dkms ;
     OBS builds them in a clean chroot. Publishing is gated on the no-GPU test
     suite passing. Not affiliated with NVIDIA.
   </description>
-  <person userid="kami911" role="maintainer"/>
-  <person userid="kami911" role="bugowner"/>
+  <person userid="@OBS_USER@" role="maintainer"/>
+  <person userid="@OBS_USER@" role="bugowner"/>
+
+  <!-- publish is OFF at project level: individual packages are published only
+       after the release gate is green for that repository (see _obs/README.md). -->
+  <build><enable/></build>
+  <publish><disable/></publish>
+  <debuginfo><disable/></debuginfo>
 
   <repository name="Debian_13">
     <path project="Debian:13" repository="main"/>
