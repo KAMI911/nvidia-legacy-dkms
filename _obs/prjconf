@@ -1,21 +1,13 @@
 # Project config for home:<login>:nvidia-legacy:dkms
 # (no tokens — apply verbatim: osc meta prjconf <project> -F prjconf)
 #
-# All repositories are Debian/Ubuntu, so no %if guard is needed. The Debian/
-# Ubuntu base projects already set Type/Repotype; we restate them for clarity
-# and add the build-time helpers debootstrap's minimal set lacks.
+# The Debian/Ubuntu base projects already set Type/Repotype and provide the
+# build chroot via OBS's normal package resolution. Do NOT force
+# Buildengine: debootstrap here — pointing it at the aggregated <path> repo
+# fails with "Couldn't find these debs: apt mawk".
 
 Type: dsc
 Repotype: debian
-Buildengine: debootstrap
-Patterntype: none
-
-Support: ca-certificates
-Support: xz-utils
-Support: dpkg-dev
-Support: debhelper
-Support: dh-dkms
-Support: quilt
 
 # Determinism: UTC + stable locale. SOURCE_DATE_EPOCH is set per package by
 # debhelper from debian/changelog — never pin it here.

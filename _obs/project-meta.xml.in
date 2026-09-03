@@ -39,8 +39,4 @@
     <path project="Ubuntu:22.04" repository="universe"/>
     <arch>x86_64</arch>
   </repository>
-  <repository name="xUbuntu_20.04">
-    <path project="Ubuntu:20.04" repository="universe"/>
-    <arch>x86_64</arch>
-  </repository>
 </project>

@@ -33,7 +33,6 @@ build:
     - debian11
     - debian12
     - debian13
-    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
     archs:
@@ -48,7 +47,6 @@ build:
     - debian11
     - debian12
     - debian13
-    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
     archs:
@@ -63,7 +61,6 @@ build:
     - debian11
     - debian12
     - debian13
-    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
     archs:
@@ -78,7 +75,6 @@ build:
     - debian11
     - debian12
     - debian13
-    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
     archs:
