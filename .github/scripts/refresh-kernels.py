@@ -22,7 +22,7 @@ DEB = {
     "debian13": ("trixie",   ["amd64", "i386"]),
 }
 UBU = {
-    "ubuntu2004": "focal", "ubuntu2204": "jammy", "ubuntu2404": "noble",
+    "ubuntu2004": "focal", "ubuntu2204": "jammy", "ubuntu2404": "noble", "ubuntu2604": "resolute",
 }
 
 

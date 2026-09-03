@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+XORGDIR=/etc/X11/xorg.conf.d
+SNIPPET=20-nvidia-legacy-340xx.conf
+SHARED=/usr/share/nvidia-legacy-340xx/xorg.conf.d/$SNIPPET
+
+case "$1" in
+    remove|deconfigure)
+        # Remove our snippet only if it is still byte-identical to what we shipped.
+        if [ -e "$XORGDIR/$SNIPPET" ] && [ -e "$SHARED" ] && \
+           cmp -s "$XORGDIR/$SNIPPET" "$SHARED"; then
+            rm -f "$XORGDIR/$SNIPPET"
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

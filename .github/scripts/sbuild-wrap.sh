@@ -9,7 +9,7 @@ series="${1:?}"; target="${2:?}"
 
 declare -A codename=(
   [debian11]=bullseye [debian12]=bookworm [debian13]=trixie
-  [ubuntu2004]=focal [ubuntu2204]=jammy [ubuntu2404]=noble)
+  [ubuntu2004]=focal [ubuntu2204]=jammy [ubuntu2404]=noble [ubuntu2604]=resolute)
 cn="${codename[$target]:?unknown target}"
 
 # arches for this (series,target) from series.yaml

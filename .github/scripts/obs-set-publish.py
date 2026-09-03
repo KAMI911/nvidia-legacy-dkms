@@ -10,7 +10,7 @@ import os, subprocess, sys, xml.etree.ElementTree as ET, pathlib
 PROJECT = os.environ.get("OBS_PROJECT", "home:KAMI911:nvidia-legacy:dkms")
 REPO = {
     "debian11": "Debian_11", "debian12": "Debian_12", "debian13": "Debian_13",
-    "ubuntu2004": "xUbuntu_20.04", "ubuntu2204": "xUbuntu_22.04", "ubuntu2404": "xUbuntu_24.04",
+    "ubuntu2004": "xUbuntu_20.04", "ubuntu2204": "xUbuntu_22.04", "ubuntu2404": "xUbuntu_24.04", "ubuntu2604": "xUbuntu_26.04",
 }
 
 

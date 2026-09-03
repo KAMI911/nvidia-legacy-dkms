@@ -5,22 +5,25 @@ build:
     targets:
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
       ubuntu:
       - amd64
     blocking: true
-    note: "Maxwell/Pascal/Volta; amd64 only; active upstream \u2014 bump version on\
-      \ respin"
+    note: "Maxwell/Pascal/Volta; amd64 only; active upstream \u2014 bump version on respin"
   580xx-open:
     targets:
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -33,8 +36,10 @@ build:
     - debian11
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -47,8 +52,10 @@ build:
     - debian11
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -61,8 +68,10 @@ build:
     - debian11
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -75,8 +84,10 @@ build:
     - debian11
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -89,8 +100,10 @@ build:
     targets:
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -98,14 +111,15 @@ build:
       ubuntu:
       - amd64
     blocking: false
-    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-19; compile-only
-      until hardware
+    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-19; compile-only until hardware
   96xx:
     targets:
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -113,14 +127,15 @@ build:
       ubuntu:
       - amd64
     blocking: false
-    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-12; compile-only
-      until hardware
+    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-12; compile-only until hardware
   71xx:
     targets:
     - debian12
     - debian13
+    - ubuntu2004
     - ubuntu2204
     - ubuntu2404
+    - ubuntu2604
     archs:
       debian:
       - amd64
@@ -128,5 +143,4 @@ build:
       ubuntu:
       - amd64
     blocking: false
-    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-2; compile-only
-      until hardware
+    note: EXPERIMENTAL forward-port; X via xorg-server-legacy-nvidia-2; compile-only until hardware

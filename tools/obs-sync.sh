@@ -51,7 +51,8 @@ for dsc in "$BUILDDIR/${pkg}_"*-*.dsc; do
   suffix="$(sed -n 's/.*~\([a-z]*\)[0-9]*\.dsc/\1/p' <<<"$base")"
   case "$suffix" in
     trixie)   repo=Debian_13     ;; bookworm) repo=Debian_12     ;; bullseye) repo=Debian_11 ;;
-    noble)    repo=xUbuntu_24.04 ;; jammy)    repo=xUbuntu_22.04 ;; focal)    repo=xUbuntu_20.04 ;;
+    resolute) repo=xUbuntu_26.04 ;; noble)    repo=xUbuntu_24.04 ;;
+    jammy)    repo=xUbuntu_22.04 ;; focal)    repo=xUbuntu_20.04 ;;
     *) echo "cannot map $base"; continue ;;
   esac
   cp "$dsc" "$pdir/${pkg}-${repo}.dsc"

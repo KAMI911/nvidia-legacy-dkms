@@ -1,0 +1,86 @@
+#!/usr/bin/make -f
+# Reproducible build rules for nvidia-legacy-340xx (340.108), flavour: dkms
+# Rendered by nvidia-legacy-common/scripts/render-debian.py — do not edit here.
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND  = -Wall
+export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
+
+SERIES      := 340xx
+VERSION     := 340.108
+FLAVOUR     := dkms
+DKMS_NAME   := nvidia-legacy-$(SERIES)
+DKMS_SRC    := debian/nvidia-legacy-$(SERIES)-kernel-dkms/usr/src/$(DKMS_NAME)-$(VERSION)
+# payload/ is the extracted .run, delivered via the .orig tarball(s)
+PAYLOAD     := $(CURDIR)
+PAYLOAD32   := $(CURDIR)/i386-payload
+
+# a single space, for joining lists
+EMPTY :=
+SP    := $(EMPTY) $(EMPTY)
+# every binary package's private libdir, colon-joined (dh_shlibdeps keeps only
+# the LAST -l it is given, so this must be one argument)
+PRIV_LIBDIRS := $(subst $(SP),:,$(strip $(foreach p,$(shell dh_listpackages),$(CURDIR)/debian/$(p)/usr/lib/$(DEB_HOST_MULTIARCH))))
+
+%:
+	dh $@ --with dkms
+
+override_dh_auto_configure:
+	# nothing to ./configure — the payload is prebuilt userspace + module sources
+
+override_dh_auto_build:
+	# userspace is prebuilt; only nvidia-settings CLI helpers (if any) are compiled
+	:
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+override_dh_auto_install:
+	set -e; \
+	install -d debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH); \
+	debian/helpers/install-userspace.sh "$(PAYLOAD)" debian/tmp "$(DEB_HOST_MULTIARCH)" 340.108
+	# --- DKMS module source tree -------------------------------------------
+	install -d $(DKMS_SRC)
+	SRCD=kernel; test -d "$(PAYLOAD)/$$SRCD" || SRCD=$$(test -d "$(PAYLOAD)/kernel" && echo kernel || echo usr/src/nv); cp -a "$(PAYLOAD)/$$SRCD/." $(DKMS_SRC)/
+	# apply the gated kernel/build patches into the module tree
+	set -e; cd $(DKMS_SRC); \
+	  for p in `ls -1 $(CURDIR)/debian/patches/kernel/*.patch* 2>/dev/null | sort -V`; do \
+	    echo "  dkms-patch $$p"; patch -p1 --forward --no-backup-if-mismatch -F3 -r /dev/null < "$$p" || test $$? -le 1; \
+	  done
+
+override_dh_dkms:
+	dh_dkms -V $(VERSION)
+
+execute_after_dh_fixperms:
+	# nvidia-modprobe is setuid root by design on real hardware installs
+	-chmod 4711 debian/nvidia-legacy-$(SERIES)-driver-bin/usr/bin/nvidia-modprobe
+
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
+
+override_dh_dwz:
+	# NVIDIA blobs carry no .debug_info — nothing for dwz to do
+
+override_dh_makeshlibs:
+	# these are private driver libs, not a public shared-lib package — no shlibs
+	dh_makeshlibs -Xlibnvidia -Xlibcuda -Xlibnvcuvid -XlibGLX_nvidia \
+	  -XlibEGL_nvidia -XlibGLESv -Xlibvdpau_nvidia -Xlibglx
+
+override_dh_shlibdeps:
+	# let dpkg-shlibdeps resolve the inter-NVIDIA SONAMEs (libnvidia-*, libcuda,
+	# libnvcuvid, libGLX_nvidia ...) against our own just-staged packages
+	dh_shlibdeps \
+	  -l$(PRIV_LIBDIRS) \
+	  -Xnvidia_drv.so -Xlibglxserver_nvidia \
+	  -Xlibnvidia-egl-wayland -Xlibnvidia-egl-gbm -Xlibnvidia-vulkan-producer \
+	  -Xlibnvidia-pkcs11 -Xlibnvidia-ngx -Xlibnvidia-vksc \
+	  -- --ignore-missing-info \
+	     --warnings=0
+
+override_dh_gencontrol:
+	dh_gencontrol -- -Vnvidia:Version=$(VERSION)
+
+# Determinism: clamp mtimes, sort tar members (dh_builddeb >= 1.20 does this),
+# never embed build paths.
+override_dh_builddeb:
+	dh_builddeb -- -Zxz -z9

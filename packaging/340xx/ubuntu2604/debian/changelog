@@ -1,0 +1,8 @@
+nvidia-legacy-340xx (340.108-0nvl1~resolute1) resolute; urgency=medium
+
+  * Reproducible build of NVIDIA 340.108 (340xx legacy series)
+    for ubuntu2604 (resolute).
+  * Rendered by render-debian.py from nvidia-legacy-common @ 36003ed.
+
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Thu, 03 Sep 2026 11:54:26 +0000
+

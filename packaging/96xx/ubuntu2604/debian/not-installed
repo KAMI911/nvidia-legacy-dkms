@@ -1,0 +1,3 @@
+usr/lib/xorg/modules/drivers/nvidia_drv.so
+usr/lib/xorg/modules/extensions/libglx.so.*
+usr/lib/xorg/modules/extensions/libglxserver_nvidia.so.*
