@@ -2,7 +2,7 @@ nvidia-legacy-470xx (470.256.02-0nvl1~jammy1) jammy; urgency=medium
 
   * Reproducible build of NVIDIA 470.256.02 (470xx legacy series)
     for ubuntu2204 (jammy).
-  * Rendered by render-debian.py from nvidia-legacy-common @ fda945b.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 803c585.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Mon, 07 Sep 2026 08:42:24 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Mon, 07 Sep 2026 09:26:13 +0000
 
