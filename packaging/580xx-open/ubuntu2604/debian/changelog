@@ -2,7 +2,7 @@ nvidia-legacy-580xx-open (580.178.04-0nvl1~resolute1) resolute; urgency=medium
 
   * Reproducible build of NVIDIA 580.178.04 (580xx-open legacy series)
     for ubuntu2604 (resolute).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 7c4c68d.
+  * Rendered by render-debian.py from nvidia-legacy-common @ fda945b.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Sat, 05 Sep 2026 18:38:41 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Mon, 07 Sep 2026 08:42:24 +0000
 
