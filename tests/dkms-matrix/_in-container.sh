@@ -31,18 +31,23 @@ dkms build -m "$NAME" -v "$VER" -k "$KVER" --no-clean-kernel || {
 }
 
 rc=0
-# dkms may leave the built modules in /var/lib/dkms/.../module/ OR install them
-# (possibly .ko.xz / .ko.zst compressed) into /lib/modules/$KVER/updates/dkms/
-find_ko() {  # find_ko <name> -> prints the path or nothing
+# `dkms build` (build-only, no install) leaves the modules under
+# /var/lib/dkms/.../module/ -- compressed (.ko.xz/.ko.zst) on modern dkms, so
+# that location needs the same wildcard fallback as the installed-module
+# location. `dkms install`/postinst AUTOINSTALL instead puts them (compressed
+# or not) into /lib/modules/$KVER/updates/dkms/.
+find_ko() {  # find_ko <name> -> prints the path, or nothing (exit 1)
   local n="$1" p
   for p in "/var/lib/dkms/$NAME/$VER/$KVER"/*/module/"$n".ko \
+           "/var/lib/dkms/$NAME/$VER/$KVER"/*/module/"$n".ko.* \
            "/lib/modules/$KVER/updates/dkms/$n".ko \
            "/lib/modules/$KVER/updates/dkms/$n".ko.* ; do
-    [ -e "$p" ] && { echo "$p"; return; }
+    [ -e "$p" ] && { echo "$p"; return 0; }
   done
+  return 1
 }
 for ko in nvidia nvidia-modeset nvidia-drm nvidia-uvm; do
-  f="$(find_ko "$ko")"
+  f="$(find_ko "$ko" || true)"
   if [ -n "$f" ]; then
     case "$f" in
       *.ko) vm="$(modinfo -F vermagic "$f" 2>/dev/null)"; sv="$(modinfo -F srcversion "$f" 2>/dev/null)"
