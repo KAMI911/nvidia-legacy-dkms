@@ -122,3 +122,10 @@ ubuntu2404:
   pkg: linux-headers-lowlatency
   variant: lowlatency
   ver: '*'
+ubuntu2604:
+# new entry, never yet proven green -- non-blocking until a run passes.
+- abi: generic
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-generic
+  ver: '*'

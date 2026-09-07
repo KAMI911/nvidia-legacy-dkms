@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        dkms add -m nvidia-legacy-304xx -v 304.137 --rpm_safe_upgrade || true
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

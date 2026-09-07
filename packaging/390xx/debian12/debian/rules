@@ -23,7 +23,7 @@ SP    := $(EMPTY) $(EMPTY)
 PRIV_LIBDIRS := $(subst $(SP),:,$(strip $(foreach p,$(shell dh_listpackages),$(CURDIR)/debian/$(p)/usr/lib/$(DEB_HOST_MULTIARCH))))
 
 %:
-	dh $@ --with dkms
+	dh $@
 
 override_dh_auto_configure:
 	# nothing to ./configure — the payload is prebuilt userspace + module sources
@@ -47,9 +47,9 @@ override_dh_auto_install:
 	  for p in `ls -1 $(CURDIR)/debian/patches/kernel/*.patch* 2>/dev/null | sort -V`; do \
 	    echo "  dkms-patch $$p"; patch -p1 --forward --no-backup-if-mismatch -F3 -r /dev/null < "$$p" || test $$? -le 1; \
 	  done
-
-override_dh_dkms:
-	dh_dkms -V $(VERSION)
+	# real dkms.conf DKMS itself reads on the target (was staged by dh_dkms;
+	# we call `dkms add`/`dkms remove` ourselves from postinst/prerm instead)
+	install -m0644 debian/nvidia-legacy-$(SERIES)-kernel-dkms.dkms $(DKMS_SRC)/dkms.conf
 
 execute_after_dh_fixperms:
 	# nvidia-modprobe is setuid root by design on real hardware installs
@@ -73,7 +73,7 @@ override_dh_shlibdeps:
 	  -l$(PRIV_LIBDIRS) \
 	  -Xnvidia_drv.so -Xlibglxserver_nvidia \
 	  -Xlibnvidia-egl-wayland -Xlibnvidia-egl-gbm -Xlibnvidia-egl-xlib -Xlibnvidia-egl-xcb -Xlibnvidia-vulkan-producer \
-	  -Xlibnvidia-pkcs11 -Xlibnvidia-ngx -Xlibnvidia-vksc \
+	  -Xlibnvidia-pkcs11 -Xlibnvidia-ngx -Xlibnvidia-vksc -Xlibnvidia-gtk2 -Xlibnvidia-gtk3 \
 	  -- --ignore-missing-info \
 	     --warnings=0
 

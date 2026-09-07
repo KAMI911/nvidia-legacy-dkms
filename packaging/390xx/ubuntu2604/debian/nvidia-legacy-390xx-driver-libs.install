@@ -1,4 +1,5 @@
 usr/lib/*/lib*.so.*
 usr/share/glvnd/egl_vendor.d/*
 usr/share/vulkan/icd.d/*
+etc/OpenCL/vendors/*
 usr/share/doc/nvidia-legacy-driver-libs/*

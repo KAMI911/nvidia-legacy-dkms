@@ -1,0 +1,119 @@
+name: build
+
+# Produces the .deb set for each (series, target): verify-run -> assemble-source
+# -> render -> dpkg-source -> dpkg-buildpackage in a clean container. Uploads
+# debs-<series>-<target> so dkms-matrix.yml and autopkgtest.yml (chained via
+# pr-checks.yml with `needs:`) have something to download. Not triggered
+# directly on pull_request -- see pr-checks.yml.
+
+on:
+  workflow_call:
+    inputs:
+      full:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: "${{ steps.g.outputs.m }}"
+    steps:
+      - uses: actions/checkout@v5
+      - run: pip install pyyaml
+      - id: g
+        run: |
+          SEL=""; [ "${{ inputs.full }}" = "true" ] || SEL="--series 390xx"
+          echo "m=$(python3 .github/scripts/gen-matrix.py $SEL)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+        with: { submodules: true }
+      - name: cache upstream .run
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/nvidia-legacy
+          key: run-${{ matrix.series }}
+      - name: host deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dpkg-dev xz-utils python3-yaml curl
+      - name: verify + assemble-source + render
+        env:
+          NVL_XZ_LEVEL: '-4'
+        run: |
+          S="${{ matrix.series }}"; T="${{ matrix.target }}"
+          B="$RUNNER_TEMP/b"; mkdir -p "$B"
+          common/scripts/verify-run.sh "$S"
+          common/scripts/assemble-source.sh "$S" "$B"
+          UV=$(python3 -c "import yaml;print(yaml.safe_load(open('common/drivers.yaml'))['series']['$S']['version'])")
+          SRCDIR="nvidia-legacy-${S}-${UV}"
+          tar -C "$B" -xf "$B"/nvidia-legacy-${S}_${UV}.orig.tar.xz
+          python3 common/scripts/render-debian.py --series "$S" --target "$T" --flavour dkms --out "$B/$SRCDIR"
+          ( cd "$B" && dpkg-source --no-check -b "$SRCDIR" )
+          ls -la "$B"/*.dsc
+          echo "B=$B" >> "$GITHUB_ENV"
+          echo "SRCPKG=nvidia-legacy-${S}" >> "$GITHUB_ENV"
+      - name: image for target
+        id: img
+        run: |
+          declare -A IMG=(
+            [debian11]=debian:11 [debian12]=debian:12 [debian13]=debian:trixie
+            [ubuntu2004]=ubuntu:20.04 [ubuntu2204]=ubuntu:22.04
+            [ubuntu2404]=ubuntu:24.04 [ubuntu2604]=ubuntu:26.04)
+          T="${{ matrix.target }}"
+          echo "image=${IMG[$T]:?unknown target $T}" >> "$GITHUB_OUTPUT"
+      - name: dpkg-buildpackage (clean container)
+        run: |
+          docker run --rm -v "$B":/b -w /b ${{ steps.img.outputs.image }} bash -c '
+            set -e; export DEBIAN_FRONTEND=noninteractive
+            # The *-security pocket has repeatedly served 404s on files its
+            # own Packages index still lists (a Fastly-CDN-edge cache-
+            # staleness issue upstream, not ours -- confirmed hitting
+            # different packages, different edge IPs, on different runs).
+            # This throwaway build container does not need CVE-patched
+            # versions, so exclude that pocket entirely.
+            printf "Package: *\nPin: release a=*-security\nPin-Priority: -1\n" \
+              > /etc/apt/preferences.d/no-security
+            apt-get update -qq
+            # Excluding *-security leaves whatever the base image already has
+            # installed (baked in at its security version, e.g. perl-base,
+            # libc6) unable to satisfy an exact-version Depends from a package
+            # whose only remaining candidate is the main-pocket version (e.g.
+            # perl, libc6-dev) -- apt will not downgrade on its own. Force
+            # every already-installed package back to the main pocket in one
+            # shot before installing anything new.
+            . /etc/os-release
+            apt-get install -y -qq --allow-downgrades \
+              $(dpkg -l | awk "/^ii/{print \$2\"/$VERSION_CODENAME\"}")
+            apt-get install -y -qq --no-install-recommends \
+              dpkg-dev debhelper build-essential xz-utils ca-certificates
+            # dh-dkms is only a real, separate package on suites where dkms no
+            # longer bundles Debian::Debhelper::Sequence::dkms (bookworm/trixie,
+            # noble/resolute); focal has no such package at all -- its own dkms
+            # (2.8.x) provides the sequence directly.
+            apt-get install -y -qq --no-install-recommends dh-dkms || true
+            apt-get build-dep -y -qq ./'"$SRCPKG"'_*.dsc
+            dpkg-source --no-check -x '"$SRCPKG"'_*.dsc /tmp/x
+            cd /tmp/x
+            dpkg-buildpackage -b -uc -us
+            cp /tmp/*.deb /tmp/*.buildinfo /tmp/*.changes /b/ 2>/dev/null || true
+            ls -la /b/*.deb
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debs-${{ matrix.series }}-${{ matrix.target }}
+          path: |
+            ${{ env.B }}/*.deb
+            ${{ env.B }}/*.dsc
+            ${{ env.B }}/*.buildinfo
+            ${{ env.B }}/*.changes
