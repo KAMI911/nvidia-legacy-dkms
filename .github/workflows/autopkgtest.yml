@@ -1,7 +1,8 @@
 name: autopkgtest
 
 on:
-  pull_request:
+  # not pull_request: directly -- needs build.yml's artifact, see
+  # pr-checks.yml for the properly ordered chain.
   workflow_call:
     inputs:
       full: { type: boolean, default: false }
