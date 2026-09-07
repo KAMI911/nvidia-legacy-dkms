@@ -74,7 +74,14 @@ jobs:
             set -e; export DEBIAN_FRONTEND=noninteractive
             apt-get update -qq
             apt-get install -y -qq --no-install-recommends \
-              dpkg-dev debhelper dh-dkms build-essential xz-utils ca-certificates
+              dpkg-dev debhelper build-essential xz-utils ca-certificates
+            # dh-dkms is only a real, separate package on suites where dkms
+            # itself no longer bundles Debian::Debhelper::Sequence::dkms
+            # (bookworm/trixie, noble/resolute); focal has no such package at
+            # all -- its own dkms (2.8.x) provides the sequence directly. Best
+            # effort here; apt-get build-dep below pulls in whatever the
+            # rendered control actually declares.
+            apt-get install -y -qq --no-install-recommends dh-dkms || true
             apt-get build-dep -y -qq ./'"$SRCPKG"'_*.dsc
             dpkg-source --no-check -x '"$SRCPKG"'_*.dsc /tmp/x
             cd /tmp/x
