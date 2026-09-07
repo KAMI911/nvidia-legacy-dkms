@@ -76,7 +76,25 @@ jobs:
         run: |
           docker run --rm -v "$B":/b -w /b ${{ steps.img.outputs.image }} bash -c '
             set -e; export DEBIAN_FRONTEND=noninteractive
+            # The *-security pocket has repeatedly served 404s on files its
+            # own Packages index still lists (a Fastly-CDN-edge cache-
+            # staleness issue upstream, not ours -- confirmed hitting
+            # different packages, different edge IPs, on different runs).
+            # This throwaway build container does not need CVE-patched
+            # versions, so exclude that pocket entirely.
+            printf "Package: *\nPin: release a=*-security\nPin-Priority: -1\n" \
+              > /etc/apt/preferences.d/no-security
             apt-get update -qq
+            # Excluding *-security leaves whatever the base image already has
+            # installed (baked in at its security version, e.g. perl-base,
+            # libc6) unable to satisfy an exact-version Depends from a package
+            # whose only remaining candidate is the main-pocket version (e.g.
+            # perl, libc6-dev) -- apt will not downgrade on its own. Force
+            # every already-installed package back to the main pocket in one
+            # shot before installing anything new.
+            . /etc/os-release
+            apt-get install -y -qq --allow-downgrades \
+              $(dpkg -l | awk "/^ii/{print \$2\"/$VERSION_CODENAME\"}")
             apt-get install -y -qq --no-install-recommends \
               dpkg-dev debhelper build-essential xz-utils ca-certificates
             # dh-dkms is only a real, separate package on suites where dkms no
