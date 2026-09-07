@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        dkms remove -m nvidia-legacy-71xx -v 71.86.15 --all || true
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

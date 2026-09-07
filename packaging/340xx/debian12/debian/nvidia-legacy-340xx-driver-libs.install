@@ -1,2 +1,3 @@
 usr/lib/*/lib*.so.*
+etc/OpenCL/vendors/*
 usr/share/doc/nvidia-legacy-driver-libs/*

@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        dkms remove -m nvidia-legacy-340xx -v 340.108 --all || true
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        dkms remove -m nvidia-legacy-390xx -v 390.157 --all || true
+        ;;
+esac
+
+#DEBHELPER#
+exit 0
