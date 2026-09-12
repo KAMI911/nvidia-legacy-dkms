@@ -6,12 +6,13 @@ set -eu
 SERIES="${1:?series}"
 PKG="nvidia-legacy-${SERIES}-driver"
 export DEBIAN_FRONTEND=noninteractive
+. /t/apt-lib.sh
 
 before="$(mktemp)"; after="$(mktemp)"
 dpkg -l | awk '{print $2}' | sort > "$before"
 
 echo ":: install $PKG"
-apt-get install -y "$PKG"
+apt_install_reconciled "$PKG"
 
 echo ":: verify pieces landed"
 dpkg -s "nvidia-legacy-${SERIES}-driver-libs" >/dev/null

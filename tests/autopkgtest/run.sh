@@ -17,13 +17,20 @@ set +e
 $OCI run --name "$cid" -v "$BUILDDIR":/build:ro -v "$(cd "$(dirname "$0")" && pwd)":/t:ro \
   -e SERIES="$series" "$base" bash -c '
     set -e; export DEBIAN_FRONTEND=noninteractive
-    apt-get update -qq
-    apt-get install -y -qq dpkg-dev
+    . /t/apt-lib.sh
+    apt_disable_security_pocket
+    # bullseye-security in particular has repeatedly served 404s / an expired
+    # Release file against its own Packages index (Fastly-CDN-edge staleness
+    # upstream) -- the pin above needs Check-Valid-Until=false to even get a
+    # chance to matter, since a hard-expired Release fails apt-get update
+    # outright otherwise.
+    apt-get update -qq -o Acquire::Check-Valid-Until=false
+    apt_install_reconciled dpkg-dev
     # a local file:// apt repo so the sub-tests can apt-get install BY NAME
     mkdir -p /localrepo && cp /build/*.deb /localrepo/
     ( cd /localrepo && dpkg-scanpackages -m . | gzip -9 > Packages.gz )
     echo "deb [trusted=yes] file:/localrepo ./" > /etc/apt/sources.list.d/nvl.list
-    apt-get update -qq
+    apt-get update -qq -o Acquire::Check-Valid-Until=false
     fail=0
     for t in install-purge file-conflicts xorg-dummy; do
       echo "===== $t ====="
