@@ -6,10 +6,11 @@
 set -eu
 SERIES="${1:?series}"
 export DEBIAN_FRONTEND=noninteractive
+. /t/apt-lib.sh
 rc=0
 
 echo ":: dpkg file overlap check"
-apt-get install -y "nvidia-legacy-${SERIES}-driver" >/dev/null
+apt_install_reconciled "nvidia-legacy-${SERIES}-driver" >/dev/null
 
 for our in $(dpkg -l "nvidia-legacy-${SERIES}-*" "libgl1-nvidia-legacy-${SERIES}-*" | awk '/^ii/{print $2}'); do
   dpkg -L "$our" | while read -r f; do
