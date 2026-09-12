@@ -15,7 +15,12 @@ set -euo pipefail
 series="${1:?series}"; target="${2:?target}"
 qdir="$(cd "$(dirname "$0")" && pwd)"
 
-[ -e /dev/kvm ] || { skip "no /dev/kvm — qemu stage skipped"; summary; exit 0; }
+# `-e` alone isn't enough: release.yml's full-matrix run hit /dev/kvm
+# existing but inaccessible ("Permission denied" from qemu itself, a hard
+# failure, not a graceful skip) -- some ubuntu-latest runners have the node
+# without the calling user actually having kvm-group access to it. `-w` is
+# what qemu's ioctls on the device actually need.
+[ -w /dev/kvm ] || { skip "no usable /dev/kvm — qemu stage skipped"; summary; exit 0; }
 command -v qemu-system-x86_64 >/dev/null || { skip "qemu not installed"; summary; exit 0; }
 
 declare -A cloud=(
