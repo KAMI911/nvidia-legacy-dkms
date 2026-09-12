@@ -91,6 +91,13 @@ jobs:
       - run: |
           mkdir -p common/docs/forward-port-status
           cp /tmp/fps/*.md common/docs/forward-port-status/ 2>/dev/null || true
+      - name: absorb submodule gitdir
+        # create-pull-request's `path:` input can't handle a submodule
+        # whose .git file points at an absolute gitdir (what
+        # actions/checkout writes) -- it string-concatenates `path` with
+        # that absolute path and 404s. absorbgitdirs relocates the
+        # submodule's real git dir under its own .git/, sidestepping it.
+        run: git submodule absorbgitdirs common
       - uses: peter-evans/create-pull-request@v6
         with:
           path: common
