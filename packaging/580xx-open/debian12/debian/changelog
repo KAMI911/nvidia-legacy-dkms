@@ -2,7 +2,7 @@ nvidia-legacy-580xx-open (580.178.04-0nvl1~bookworm1) bookworm; urgency=medium
 
   * Reproducible build of NVIDIA 580.178.04 (580xx-open legacy series)
     for debian12 (bookworm).
-  * Rendered by render-debian.py from nvidia-legacy-common @ c16faba.
+  * Rendered by render-debian.py from nvidia-legacy-common @ 9c016f7.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Sat, 12 Sep 2026 19:01:32 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Sun, 13 Sep 2026 02:51:23 +0000
 
