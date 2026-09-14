@@ -2,7 +2,7 @@ nvidia-legacy-580xx (580.178.04-0nvl1~focal1) focal; urgency=medium
 
   * Reproducible build of NVIDIA 580.178.04 (580xx legacy series)
     for ubuntu2004 (focal).
-  * Rendered by render-debian.py from nvidia-legacy-common @ 9c016f7.
+  * Rendered by render-debian.py from nvidia-legacy-common @ a489501.
 
- -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Sun, 13 Sep 2026 02:51:23 +0000
+ -- nvidia-legacy CI <ci@nvidia-legacy.invalid>  Sun, 13 Sep 2026 08:11:44 +0000
 
