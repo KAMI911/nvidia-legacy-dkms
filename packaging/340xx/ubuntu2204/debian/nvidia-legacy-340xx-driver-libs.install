@@ -1,3 +1,4 @@
 usr/lib/*/lib*.so.*
+usr/lib/*/nvidia-legacy-alt/*
 etc/OpenCL/vendors/*
 usr/share/doc/nvidia-legacy-driver-libs/*
