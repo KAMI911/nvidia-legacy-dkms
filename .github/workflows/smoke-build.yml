@@ -29,17 +29,77 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { series: '390xx', target: 'debian11',   image: 'debian:bullseye' }
+          - { series: '390xx', target: 'debian12',   image: 'debian:bookworm' }
           - { series: '390xx', target: 'debian13',   image: 'debian:trixie' }
           - { series: '390xx', target: 'debian13',   image: 'i386/debian:trixie', arch: 'i386' }
           - { series: '390xx', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '390xx', target: 'ubuntu2204', image: 'ubuntu:22.04' }
           - { series: '390xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
           - { series: '390xx', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          - { series: '340xx', target: 'debian11',   image: 'debian:bullseye' }
+          - { series: '340xx', target: 'debian12',   image: 'debian:bookworm' }
           - { series: '340xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '340xx', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '340xx', target: 'ubuntu2204', image: 'ubuntu:22.04' }
+          - { series: '340xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '340xx', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          - { series: '470xx', target: 'debian11',   image: 'debian:bullseye' }
+          - { series: '470xx', target: 'debian12',   image: 'debian:bookworm' }
           - { series: '470xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '470xx', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '470xx', target: 'ubuntu2204', image: 'ubuntu:22.04' }
+          - { series: '470xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '470xx', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          - { series: '580xx', target: 'debian12',   image: 'debian:bookworm' }
           - { series: '580xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '580xx', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '580xx', target: 'ubuntu2204', image: 'ubuntu:22.04' }
+          - { series: '580xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '580xx', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          - { series: '580xx-open', target: 'debian12', image: 'debian:bookworm' }
           - { series: '580xx-open', target: 'debian13', image: 'debian:trixie' }
+          - { series: '580xx-open', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '580xx-open', target: 'ubuntu2204', image: 'ubuntu:22.04' }
+          - { series: '580xx-open', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '580xx-open', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          - { series: '304xx', target: 'debian11',   image: 'debian:bullseye' }
+          - { series: '304xx', target: 'debian12',   image: 'debian:bookworm' }
           - { series: '304xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '304xx', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '304xx', target: 'ubuntu2204', image: 'ubuntu:22.04' }
+          - { series: '304xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '304xx', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          # 173xx/96xx: forward-port build-verified on amd64 5.4/6.8/6.12 +
+          # i386 6.1 (bookworm) -- see common/docs/forward-port-status/.
+          - { series: '173xx', target: 'debian12',   image: 'debian:bookworm' }
+          - { series: '173xx', target: 'debian12',   image: 'i386/debian:bookworm', arch: 'i386' }
           - { series: '173xx', target: 'debian13',   image: 'debian:trixie' }
+          - { series: '173xx', target: 'ubuntu2004', image: 'ubuntu:20.04' }
+          - { series: '173xx', target: 'ubuntu2204', image: 'ubuntu:22.04' }
+          - { series: '173xx', target: 'ubuntu2404', image: 'ubuntu:24.04' }
+          - { series: '173xx', target: 'ubuntu2604', image: 'ubuntu:26.04' }
+          - { series: '96xx', target: 'debian12',    image: 'debian:bookworm' }
+          - { series: '96xx', target: 'debian12',    image: 'i386/debian:bookworm', arch: 'i386' }
+          - { series: '96xx', target: 'debian13',    image: 'debian:trixie' }
+          - { series: '96xx', target: 'ubuntu2004',  image: 'ubuntu:20.04' }
+          - { series: '96xx', target: 'ubuntu2204',  image: 'ubuntu:22.04' }
+          - { series: '96xx', target: 'ubuntu2404',  image: 'ubuntu:24.04' }
+          - { series: '96xx', target: 'ubuntu2604',  image: 'ubuntu:26.04' }
+          # 71xx: this is a source/packaging smoke test only (the dkms flavour's
+          # override_dh_auto_build is a no-op -- the module itself compiles on
+          # the target at dkms-install time, not here), so amd64 patch
+          # application is what's actually being checked, and that's verified
+          # on all of these via the real apply-patches.sh --apply path. The
+          # *kernel module compile* itself is only build-verified so far on
+          # 5.4/6.8 (kernel/0003) -- trixie/i386 need their own 0004 first, so
+          # no i386 leg here yet. See common/docs/forward-port-status/71xx.md.
+          - { series: '71xx', target: 'debian12',    image: 'debian:bookworm' }
+          - { series: '71xx', target: 'debian13',    image: 'debian:trixie' }
+          - { series: '71xx', target: 'ubuntu2004',  image: 'ubuntu:20.04' }
+          - { series: '71xx', target: 'ubuntu2204',  image: 'ubuntu:22.04' }
+          - { series: '71xx', target: 'ubuntu2404',  image: 'ubuntu:24.04' }
+          - { series: '71xx', target: 'ubuntu2604',  image: 'ubuntu:26.04' }
     steps:
       - uses: actions/checkout@v5
         with: { submodules: true }
