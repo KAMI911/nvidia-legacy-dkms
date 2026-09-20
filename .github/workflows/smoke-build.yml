@@ -130,10 +130,20 @@ jobs:
           echo "SRCPKG=nvidia-legacy-${S}" >> "$GITHUB_ENV"
       - name: dpkg-buildpackage (clean container)
         run: |
-          docker run --rm -v "$B":/b -w /b ${{ matrix.image }} bash -c '
+          docker run --rm -v "$B":/b -v "$PWD/tests/autopkgtest":/t:ro -w /b ${{ matrix.image }} bash -c '
             set -e; export DEBIAN_FRONTEND=noninteractive
-            apt-get update -qq
-            apt-get install -y -qq --no-install-recommends \
+            . /t/apt-lib.sh
+            # Debian 11 (bullseye) is EOL: its *-security pocket now 404s on
+            # packages its own Packages index still lists (Fastly-CDN-edge
+            # cache staleness upstream, not ours). Disabling it outright then
+            # needs apt_install_reconciled (not a plain apt-get install) for
+            # any package still pinned to an exact *-security version by
+            # something else already on the image (e.g. libc6-dev wanting
+            # the base images own libc6 build exactly) -- same combination
+            # tests/autopkgtest/run.sh already relies on.
+            apt_disable_security_pocket
+            apt-get update -qq -o Acquire::Check-Valid-Until=false
+            apt_install_reconciled \
               dpkg-dev debhelper build-essential xz-utils ca-certificates
             # dh-dkms is only a real, separate package on suites where dkms
             # itself no longer bundles Debian::Debhelper::Sequence::dkms
@@ -141,7 +151,7 @@ jobs:
             # all -- its own dkms (2.8.x) provides the sequence directly. Best
             # effort here; apt-get build-dep below pulls in whatever the
             # rendered control actually declares.
-            apt-get install -y -qq --no-install-recommends dh-dkms || true
+            apt_install_reconciled dh-dkms || true
             apt-get build-dep -y -qq ./'"$SRCPKG"'_*.dsc
             dpkg-source --no-check -x '"$SRCPKG"'_*.dsc /tmp/x
             cd /tmp/x
