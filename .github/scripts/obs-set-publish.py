@@ -50,9 +50,13 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
     repo = REPO[target]
     flavor_pkg = f"{pkg}:{repo}"
 
+    # NOTE: no -M/--multibuild-package — the installed osc's CLI passes it
+    # through as multibuild_packages=, which show_results_meta() in this
+    # version doesn't accept (TypeError). -r plus our own package== filter
+    # below narrows to the same rows without it.
     proc = subprocess.run(
         ["timeout", str(timeout), "osc", "results", PROJECT, pkg,
-         "-r", repo, "-M", repo, "--xml", "-w"],
+         "-r", repo, "--xml", "-w"],
         text=True, capture_output=True,
     )
     if proc.returncode == 124:
