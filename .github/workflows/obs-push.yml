@@ -15,6 +15,10 @@ on:
         description: 'also apply _obs project meta + prjconf first'
         type: boolean
         default: true
+      publish_gate:
+        description: 'wait for the real OBS build and enable publish where green'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -94,4 +98,21 @@ jobs:
             BUILDDIR="$BUILDDIR" tools/obs-sync.sh "$s"
           done
 
-      - run: echo "OBS builds now; packages stay publish=disable until 'obs-set-publish.py <series> <target> enable' after 'osc results' is green."
+      - run: echo "OBS builds now; publish stays disabled until the gate step below sees a real green build."
+
+      - name: wait for OBS builds + gate publish on the real result
+        # workflow_call (release.yml) has no inputs -> default true
+        if: ${{ github.event.inputs.publish_gate != 'false' }}
+        env:
+          OBS_PROJECT: ${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}
+        run: |
+          # A per-combo miss is expected/normal (that repo just isn't green
+          # yet) and must not fail the job — only surface it as a warning.
+          for s in ${{ steps.pick.outputs.series }}; do
+            for t in $(python3 -c "import yaml;print(' '.join(yaml.safe_load(open('series.yaml'))['build']['$s']['targets']))"); do
+              echo "::group::gate $s/$t"
+              python3 .github/scripts/obs-set-publish.py --gate "$s" "$t" 900 ||
+                echo "::warning::$s/$t did not come back green on OBS — publish left disabled"
+              echo "::endgroup::"
+            done
+          done

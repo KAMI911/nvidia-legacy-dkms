@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """obs-set-publish.py <series> <target> enable|disable
    obs-set-publish.py --disable-missing <passed.txt>
+   obs-set-publish.py --gate <series> <target> [timeout_seconds]
 
 Edits the OBS package meta so <repository-for-target> has <publish><enable/> or
 <disable/>. Uses `osc meta pkg -e` semantics via a fetch/modify/put cycle.
+
+--gate waits for the real OBS build of that (series,target) to finish (not the
+CI/sbuild proxy of it — the two environments can disagree, e.g. a lagging OBS
+distro mirror pinning a different kernel ABI than CI saw) and only enables
+publish if OBS itself reports every arch of that repository as "succeeded".
+Any other outcome (a real failure, or the wait timing out) disables publish
+and exits non-zero, so callers can warn-and-continue per combo.
 """
 import os, subprocess, sys, xml.etree.ElementTree as ET, pathlib
 
@@ -36,7 +44,48 @@ def set_flag(series: str, target: str, enable: bool):
     print(f"{pkg}: {repo} -> {'enable' if enable else 'disable'}")
 
 
-if sys.argv[1] == "--disable-missing":
+def wait_and_gate(series: str, target: str, timeout: int):
+    pkg = f"nvidia-legacy-{series}"
+    repo = REPO[target]
+    flavor_pkg = f"{pkg}:{repo}"
+
+    proc = subprocess.run(
+        ["timeout", str(timeout), "osc", "results", PROJECT, pkg,
+         "-r", repo, "-M", repo, "--xml", "-w"],
+        text=True, capture_output=True,
+    )
+    if proc.returncode == 124:
+        print(f"{pkg}/{repo}: timed out after {timeout}s waiting for OBS build", file=sys.stderr)
+        set_flag(series, target, False)
+        sys.exit(1)
+    if proc.returncode != 0:
+        print(f"{pkg}/{repo}: osc results failed: {proc.stderr}", file=sys.stderr)
+        sys.exit(1)
+
+    root = ET.fromstring(proc.stdout)
+    codes = []
+    for result in root.iter("result"):
+        if result.get("repository") != repo:
+            continue
+        for status in result.findall("status"):
+            if status.get("package") == flavor_pkg:
+                codes.append((result.get("arch"), status.get("code")))
+
+    if not codes:
+        print(f"{pkg}/{repo}: no build results found for flavor {repo}", file=sys.stderr)
+        sys.exit(1)
+
+    ok = all(code == "succeeded" for _, code in codes)
+    print(f"{pkg}/{repo}: {codes} -> {'PASS' if ok else 'FAIL'}")
+    set_flag(series, target, ok)
+    if not ok:
+        sys.exit(1)
+
+
+if sys.argv[1] == "--gate":
+    _timeout = int(sys.argv[4]) if len(sys.argv) > 4 else 900
+    wait_and_gate(sys.argv[2], sys.argv[3], _timeout)
+elif sys.argv[1] == "--disable-missing":
     passed = {tuple(l.split()) for l in pathlib.Path(sys.argv[2]).read_text().split("\n") if l and not l.startswith("#")}
     # every known combo not in passed -> disable
     import yaml
