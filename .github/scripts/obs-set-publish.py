@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """obs-set-publish.py <series> <target> enable|disable
    obs-set-publish.py --disable-missing <passed.txt>
-   obs-set-publish.py --gate <series> <target> [timeout_seconds]
+   obs-set-publish.py --gate <series> <target> [timeout_seconds] [--dry-run]
 
 Edits the OBS package meta so <repository-for-target> has <publish><enable/> or
 <disable/>. Uses `osc meta pkg -e` semantics via a fetch/modify/put cycle.
@@ -11,7 +11,8 @@ CI/sbuild proxy of it — the two environments can disagree, e.g. a lagging OBS
 distro mirror pinning a different kernel ABI than CI saw) and only enables
 publish if OBS itself reports every arch of that repository as "succeeded".
 Any other outcome (a real failure, or the wait timing out) disables publish
-and exits non-zero, so callers can warn-and-continue per combo.
+and exits non-zero, so callers can warn-and-continue per combo. --dry-run
+still waits for and reads the real result but only prints what it would set.
 """
 import os, subprocess, sys, xml.etree.ElementTree as ET, pathlib
 
@@ -44,7 +45,7 @@ def set_flag(series: str, target: str, enable: bool):
     print(f"{pkg}: {repo} -> {'enable' if enable else 'disable'}")
 
 
-def wait_and_gate(series: str, target: str, timeout: int):
+def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
     pkg = f"nvidia-legacy-{series}"
     repo = REPO[target]
     flavor_pkg = f"{pkg}:{repo}"
@@ -56,7 +57,10 @@ def wait_and_gate(series: str, target: str, timeout: int):
     )
     if proc.returncode == 124:
         print(f"{pkg}/{repo}: timed out after {timeout}s waiting for OBS build", file=sys.stderr)
-        set_flag(series, target, False)
+        if dry:
+            print(f"(dry-run) would set {pkg}: {repo} -> disable")
+        else:
+            set_flag(series, target, False)
         sys.exit(1)
     if proc.returncode != 0:
         print(f"{pkg}/{repo}: osc results failed: {proc.stderr}", file=sys.stderr)
@@ -77,14 +81,19 @@ def wait_and_gate(series: str, target: str, timeout: int):
 
     ok = all(code == "succeeded" for _, code in codes)
     print(f"{pkg}/{repo}: {codes} -> {'PASS' if ok else 'FAIL'}")
-    set_flag(series, target, ok)
+    if dry:
+        print(f"(dry-run) would set {pkg}: {repo} -> {'enable' if ok else 'disable'}")
+    else:
+        set_flag(series, target, ok)
     if not ok:
         sys.exit(1)
 
 
 if sys.argv[1] == "--gate":
-    _timeout = int(sys.argv[4]) if len(sys.argv) > 4 else 900
-    wait_and_gate(sys.argv[2], sys.argv[3], _timeout)
+    _rest = [a for a in sys.argv[2:] if a != "--dry-run"]
+    _dry = "--dry-run" in sys.argv[2:]
+    _timeout = int(_rest[2]) if len(_rest) > 2 else 900
+    wait_and_gate(_rest[0], _rest[1], _timeout, _dry)
 elif sys.argv[1] == "--disable-missing":
     passed = {tuple(l.split()) for l in pathlib.Path(sys.argv[2]).read_text().split("\n") if l and not l.startswith("#")}
     # every known combo not in passed -> disable
