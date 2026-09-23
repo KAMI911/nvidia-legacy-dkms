@@ -20,10 +20,16 @@ single deterministic source:
    per series, per-distro via alternative `.dsc` (`nvidia-legacy-<series>-<repo>.dsc`)
    and a generated `_multibuild` listing only the targets that have sources.
 6. OBS builds in a clean chroot for every repository × arch.
-7. Publishing a repository is a **deliberate** step once `osc results` for it is
-   green — `.github/scripts/obs-set-publish.py <series> <target> enable`, or a
-   manual `osc meta pkg`. Until then the package (and the whole project) is
-   `<publish><disable/>`.
+7. `obs-push` then waits on the **real** `osc results` for each repository
+   (`obs-set-publish.py --gate <series> <target>`, `-w` under a bounded
+   timeout) and only flips `<publish><enable/>` if every arch in that
+   repository came back `succeeded`. This checks OBS itself, not the CI/sbuild
+   proxy of it — the two can disagree (e.g. a lagging OBS distro mirror
+   pinning a different kernel ABI than CI saw). A miss just leaves that
+   repo `<publish><disable/></publish>` and logs a `::warning::`; it does not
+   fail the run. Pass `publish_gate: false` on a manual dispatch to push
+   sources without waiting/gating, or run
+   `obs-set-publish.py <series> <target> enable` manually.
 
 ## Files
 
@@ -42,7 +48,7 @@ a GitHub Action — no local `osc` needed:
 
 | Action | Does |
 |---|---|
-| **obs-push** (`workflow_dispatch`) | applies project meta + prjconf, then renders + pushes the selected series' packages. `project_config: false` to skip the meta step; `series: 390xx` to push just one. |
+| **obs-push** (`workflow_dispatch`) | applies project meta + prjconf, renders + pushes the selected series' packages, then waits on the real OBS build and enables publish per repo that comes back green. `project_config: false` to skip the meta step; `series: 390xx` to push just one; `publish_gate: false` to push without waiting/gating. |
 | **release** (tag `v*`) | full gate (static+smoke+reprotest) → `obs-push` |
 
 Local fallback (needs `osc login`):
