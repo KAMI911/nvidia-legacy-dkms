@@ -2257,6 +2257,12 @@ ubuntu2204:
   fetch: archive
   pkg: linux-headers-5.15.0-25-generic
   ver: 5.15.0-25.25
+- abi: 5.15.0-194-generic
+  arch: amd64
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-5.15.0-194-generic
+  ver: 5.15.0-194.204
 ubuntu2404:
 - abi: generic
   blocking: true
@@ -2485,6 +2491,18 @@ ubuntu2404:
   fetch: archive
   pkg: linux-headers-6.8.0-31-generic
   ver: 6.8.0-31.31
+- abi: 6.8.0-142-generic
+  arch: amd64
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-6.8.0-142-generic
+  ver: 6.8.0-142.142
+- abi: 7.0.0-34-generic
+  arch: amd64
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-7.0.0-34-generic
+  ver: 7.0.0-34.34~24.04.1
 ubuntu2604:
 - abi: generic
   blocking: false
@@ -2539,3 +2557,9 @@ ubuntu2604:
   fetch: archive
   pkg: linux-headers-7.0.0-14-generic
   ver: 7.0.0-14.14
+- abi: 7.0.0-34-generic
+  arch: amd64
+  blocking: false
+  fetch: archive
+  pkg: linux-headers-7.0.0-34-generic
+  ver: 7.0.0-34.34
