@@ -9,9 +9,13 @@
 #   nvidia-legacy-<series>_<ver>.orig.tar.xz        + optional -i386
 #   nvidia-legacy-<series>_<ver>-*.debian.tar.xz
 #
-# Writes alternative .dsc names (nvidia-legacy-<series>-<OBS_repo>.dsc) and a
-# _multibuild listing only the targets actually present, so one OBS package
-# builds every target it has sources for. The package is created (build on,
+# Writes alternative .dsc names (nvidia-legacy-<series>-<OBS_repo>.dsc): OBS's
+# repository-specific build description matching (name-repository.dsc) picks
+# the right one per repository on its own, with NO _multibuild file needed —
+# a _multibuild flavor would need its own <flavor>.dsc (bare flavor name, not
+# <pkg>-<flavor>.dsc), so one was never actually selecting anything; it just
+# sat there permanently "excluded" while the plain package name quietly built
+# the right per-repo content all along. The package is created (build on,
 # publish off) if it does not exist yet.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -61,10 +65,9 @@ for dsc in "$BUILDDIR/${pkg}_"*-*.dsc; do
 done
 [ "${#targets[@]}" -gt 0 ] || { echo "no mappable .dsc for $pkg"; exit 1; }
 
-# _multibuild with only the flavours we have sources for
-{ echo "<multibuild>"
-  for t in "${targets[@]}"; do echo "  <flavor>$t</flavor>"; done
-  echo "</multibuild>"; } > "$pdir/_multibuild"
+# Drop a _multibuild left by an older sync (see comment above) so addremove
+# stages its removal — it never built anything and only added noise.
+rm -f "$pdir/_multibuild"
 
 ( cd "$pdir"
   osc addremove >/dev/null

@@ -17,8 +17,13 @@ single deterministic source:
 4. `dpkg-source -b` → `.dsc`.
 5. `tools/obs-sync.sh <series>` (`osc`) creates the OBS package if needed
    (**build on, publish off**) and commits `.dsc` + tarballs, one OBS package
-   per series, per-distro via alternative `.dsc` (`nvidia-legacy-<series>-<repo>.dsc`)
-   and a generated `_multibuild` listing only the targets that have sources.
+   per series, per-distro via alternative `.dsc` (`nvidia-legacy-<series>-<repo>.dsc`).
+   OBS's repository-specific build-description matching (`name-repository.dsc`)
+   picks the right one per repository on its own — no `_multibuild` file
+   needed or used. (An earlier version wrote one; it never selected anything,
+   since a `_multibuild` flavor needs its own bare `<flavor>.dsc`, not a
+   `<pkg>-<flavor>.dsc` — it just sat "excluded" while this naming quietly
+   did the real work.)
 6. OBS builds in a clean chroot for every repository × arch.
 7. `obs-push` then waits on the **real** `osc results` for each repository
    (`obs-set-publish.py --gate <series> <target>`, `-w` under a bounded

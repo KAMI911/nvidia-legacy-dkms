@@ -13,6 +13,13 @@ publish if OBS itself reports every arch of that repository as "succeeded".
 Any other outcome (a real failure, or the wait timing out) disables publish
 and exits non-zero, so callers can warn-and-continue per combo. --dry-run
 still waits for and reads the real result but only prints what it would set.
+
+It checks the PLAIN package name (nvidia-legacy-<series>), not a
+"<pkg>:<repo>" multibuild flavor — tools/obs-sync.sh names its per-repo .dsc
+files "<pkg>-<repo>.dsc", which OBS's repository-specific build-description
+matching already resolves per repository with no _multibuild involved. A
+flavor named after the repo would need its OWN "<repo>.dsc" (bare, no <pkg>-
+prefix) to ever leave "excluded" — it was never the thing actually building.
 """
 import os, subprocess, sys, xml.etree.ElementTree as ET, pathlib
 
@@ -48,7 +55,6 @@ def set_flag(series: str, target: str, enable: bool):
 def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
     pkg = f"nvidia-legacy-{series}"
     repo = REPO[target]
-    flavor_pkg = f"{pkg}:{repo}"
 
     # NOTE: no -M/--multibuild-package — the installed osc's CLI passes it
     # through as multibuild_packages=, which show_results_meta() in this
@@ -76,11 +82,11 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
         if result.get("repository") != repo:
             continue
         for status in result.findall("status"):
-            if status.get("package") == flavor_pkg:
+            if status.get("package") == pkg:
                 codes.append((result.get("arch"), status.get("code")))
 
     if not codes:
-        print(f"{pkg}/{repo}: no build results found for flavor {repo}", file=sys.stderr)
+        print(f"{pkg}/{repo}: no build results found", file=sys.stderr)
         sys.exit(1)
 
     ok = all(code == "succeeded" for _, code in codes)
