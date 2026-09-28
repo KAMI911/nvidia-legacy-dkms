@@ -19,6 +19,10 @@ on:
         description: 'wait for the real OBS build and enable publish where green'
         type: boolean
         default: true
+      gate_dry_run:
+        description: 'gate: wait + read the real result but only print what it would set'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -108,10 +112,11 @@ jobs:
         run: |
           # A per-combo miss is expected/normal (that repo just isn't green
           # yet) and must not fail the job — only surface it as a warning.
+          dry='${{ github.event.inputs.gate_dry_run == 'true' && '--dry-run' || '' }}'
           for s in ${{ steps.pick.outputs.series }}; do
             for t in $(python3 -c "import yaml;print(' '.join(yaml.safe_load(open('series.yaml'))['build']['$s']['targets']))"); do
               echo "::group::gate $s/$t"
-              python3 .github/scripts/obs-set-publish.py --gate "$s" "$t" 900 ||
+              python3 .github/scripts/obs-set-publish.py --gate "$s" "$t" 900 $dry ||
                 echo "::warning::$s/$t did not come back green on OBS — publish left disabled"
               echo "::endgroup::"
             done
