@@ -10,9 +10,13 @@ Edits the OBS package meta so <repository-for-target> has <publish><enable/> or
 CI/sbuild proxy of it — the two environments can disagree, e.g. a lagging OBS
 distro mirror pinning a different kernel ABI than CI saw) and only enables
 publish if OBS itself reports every arch of that repository as "succeeded".
-Any other outcome (a real failure, or the wait timing out) disables publish
-and exits non-zero, so callers can warn-and-continue per combo. --dry-run
-still waits for and reads the real result but only prints what it would set.
+A real bad result (some arch not "succeeded") disables publish. Failing to
+get a confirmed result at all — the wait timing out, or the OBS API itself
+being unreachable after retries — is inconclusive, not negative, and leaves
+publish exactly as it was (a prior "succeeded" stays published rather than
+getting flapped offline by a slow network). Either way exits non-zero, so
+callers can warn-and-continue per combo. --dry-run still waits for and reads
+the real result but only prints what it would set.
 
 It checks the PLAIN package name (nvidia-legacy-<series>), not a
 "<pkg>:<repo>" multibuild flavor — tools/obs-sync.sh names its per-repo .dsc
@@ -73,11 +77,13 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
             text=True, capture_output=True,
         )
         if proc.returncode == 124:
-            print(f"{pkg}/{repo}: timed out after {timeout}s waiting for OBS build", file=sys.stderr)
-            if dry:
-                print(f"(dry-run) would set {pkg}: {repo} -> disable")
-            else:
-                set_flag(series, target, False)
+            # Inconclusive, not negative: we couldn't confirm the result in
+            # time (a genuinely slow build, or the network itself being
+            # slow — seen live taking 5+ minutes just to fail a read). Don't
+            # touch publish — a prior real "succeeded" stays published; a
+            # combo that's never been green stays unpublished either way.
+            # Only an actual bad result code (below) disables.
+            print(f"{pkg}/{repo}: timed out after {timeout}s waiting for OBS build — leaving publish state as-is", file=sys.stderr)
             sys.exit(1)
         if proc.returncode == 0:
             break
