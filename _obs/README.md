@@ -53,7 +53,7 @@ a GitHub Action — no local `osc` needed:
 
 | Action | Does |
 |---|---|
-| **obs-push** (`workflow_dispatch`) | applies project meta + prjconf, renders + pushes the selected series' packages, then waits on the real OBS build and enables publish per repo that comes back green. `project_config: false` to skip the meta step; `series: 390xx` to push just one; `publish_gate: false` to push without waiting/gating. |
+| **obs-push** (`workflow_dispatch`) | applies project meta + prjconf, renders + pushes the selected series' packages, then waits on the real OBS build and enables publish per repo that comes back green. `project_config: false` to skip the meta step; `series: 390xx` to push just one; `publish_gate: false` to push without waiting/gating; `gate_only: true` to skip render/assemble/sync entirely and just re-run the gate against already-synced packages — a cheap (minutes, not hours) retry for combos that missed only because of a transient OBS API error, not a real build failure. |
 | **release** (tag `v*`) | full gate (static+smoke+reprotest) → `obs-push` |
 
 Local fallback (needs `osc login`):

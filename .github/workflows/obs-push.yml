@@ -23,6 +23,10 @@ on:
         description: 'gate: wait + read the real result but only print what it would set'
         type: boolean
         default: false
+      gate_only:
+        description: 'skip render/assemble/sync — just re-run the gate against already-synced packages (cheap retry after a transient OBS API error)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -79,6 +83,7 @@ jobs:
           echo "building: $want"
 
       - name: render + assemble
+        if: ${{ github.event.inputs.gate_only != 'true' }}
         env: { NVL_XZ_LEVEL: '-9e' }
         run: |
           B="$RUNNER_TEMP/src"; mkdir -p "$B"; echo "BUILDDIR=$B" >> "$GITHUB_ENV"
@@ -95,6 +100,7 @@ jobs:
           done
 
       - name: sync to OBS
+        if: ${{ github.event.inputs.gate_only != 'true' }}
         env:
           OBS_PROJECT: ${{ vars.OSC_PROJECT || 'home:KAMI911:nvidia-legacy:dkms' }}
         run: |
@@ -103,6 +109,7 @@ jobs:
           done
 
       - run: echo "OBS builds now; publish stays disabled until the gate step below sees a real green build."
+        if: ${{ github.event.inputs.gate_only != 'true' }}
 
       - name: wait for OBS builds + gate publish on the real result
         # workflow_call (release.yml) has no inputs -> default true
