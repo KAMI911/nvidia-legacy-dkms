@@ -86,7 +86,15 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
             sys.exit(1)
         time.sleep(15)
 
-    root = ET.fromstring(proc.stdout)
+    # -w polls until the build settles and can print more than one
+    # <resultlist>...</resultlist> document as state changes (seen live:
+    # "junk after document element" from ET.fromstring on the concatenated
+    # output) — parse only the last one, which reflects the final state.
+    last = proc.stdout.rfind("<resultlist")
+    if last == -1:
+        print(f"{pkg}/{repo}: no resultlist in osc output: {proc.stdout!r}", file=sys.stderr)
+        sys.exit(1)
+    root = ET.fromstring(proc.stdout[last:])
     codes = []
     for result in root.iter("result"):
         if result.get("repository") != repo:
