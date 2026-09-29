@@ -116,7 +116,7 @@ jobs:
           for s in ${{ steps.pick.outputs.series }}; do
             for t in $(python3 -c "import yaml;print(' '.join(yaml.safe_load(open('series.yaml'))['build']['$s']['targets']))"); do
               echo "::group::gate $s/$t"
-              python3 .github/scripts/obs-set-publish.py --gate "$s" "$t" 900 $dry ||
+              python3 .github/scripts/obs-set-publish.py --gate "$s" "$t" 1800 $dry ||
                 echo "::warning::$s/$t did not come back green on OBS — publish left disabled"
               echo "::endgroup::"
             done

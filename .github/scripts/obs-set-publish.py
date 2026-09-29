@@ -21,7 +21,7 @@ matching already resolves per repository with no _multibuild involved. A
 flavor named after the repo would need its OWN "<repo>.dsc" (bare, no <pkg>-
 prefix) to ever leave "excluded" — it was never the thing actually building.
 """
-import os, subprocess, sys, xml.etree.ElementTree as ET, pathlib
+import os, subprocess, sys, time, xml.etree.ElementTree as ET, pathlib
 
 PROJECT = os.environ.get("OBS_PROJECT", "home:KAMI911:nvidia-legacy:dkms")
 REPO = {
@@ -60,21 +60,31 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
     # through as multibuild_packages=, which show_results_meta() in this
     # version doesn't accept (TypeError). -r plus our own package== filter
     # below narrows to the same rows without it.
-    proc = subprocess.run(
-        ["timeout", str(timeout), "osc", "results", PROJECT, pkg,
-         "-r", repo, "--xml", "-w"],
-        text=True, capture_output=True,
-    )
-    if proc.returncode == 124:
-        print(f"{pkg}/{repo}: timed out after {timeout}s waiting for OBS build", file=sys.stderr)
-        if dry:
-            print(f"(dry-run) would set {pkg}: {repo} -> disable")
-        else:
-            set_flag(series, target, False)
-        sys.exit(1)
-    if proc.returncode != 0:
-        print(f"{pkg}/{repo}: osc results failed: {proc.stderr}", file=sys.stderr)
-        sys.exit(1)
+    #
+    # A live run (36474866312) showed most misses aren't slow/failed builds
+    # but transient network errors reaching the OBS API (SSL connection
+    # reset, "Network is unreachable") — retry those a few times before
+    # giving up, distinct from -w's own timeout (genuinely still building).
+    attempts = 3
+    for attempt in range(1, attempts + 1):
+        proc = subprocess.run(
+            ["timeout", str(timeout), "osc", "results", PROJECT, pkg,
+             "-r", repo, "--xml", "-w"],
+            text=True, capture_output=True,
+        )
+        if proc.returncode == 124:
+            print(f"{pkg}/{repo}: timed out after {timeout}s waiting for OBS build", file=sys.stderr)
+            if dry:
+                print(f"(dry-run) would set {pkg}: {repo} -> disable")
+            else:
+                set_flag(series, target, False)
+            sys.exit(1)
+        if proc.returncode == 0:
+            break
+        print(f"{pkg}/{repo}: osc results failed (attempt {attempt}/{attempts}): {proc.stderr}", file=sys.stderr)
+        if attempt == attempts:
+            sys.exit(1)
+        time.sleep(15)
 
     root = ET.fromstring(proc.stdout)
     codes = []
@@ -102,7 +112,7 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
 if sys.argv[1] == "--gate":
     _rest = [a for a in sys.argv[2:] if a != "--dry-run"]
     _dry = "--dry-run" in sys.argv[2:]
-    _timeout = int(_rest[2]) if len(_rest) > 2 else 900
+    _timeout = int(_rest[2]) if len(_rest) > 2 else 1800
     wait_and_gate(_rest[0], _rest[1], _timeout, _dry)
 elif sys.argv[1] == "--disable-missing":
     passed = {tuple(l.split()) for l in pathlib.Path(sys.argv[2]).read_text().split("\n") if l and not l.startswith("#")}
