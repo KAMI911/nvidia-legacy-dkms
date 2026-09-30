@@ -56,14 +56,66 @@ def set_flag(series: str, target: str, enable: bool):
     print(f"{pkg}: {repo} -> {'enable' if enable else 'disable'}")
 
 
+# Non-terminal build states -w would still be polling on; anything else
+# (succeeded, failed, unresolvable, broken, excluded, disabled, ...) is final.
+PENDING = {"blocked", "scheduled", "dispatching", "building", "signing", "finished", "unknown"}
+
+
+def parse_codes(xml_text: str, pkg: str, repo: str):
+    # -w polls until the build settles and can print more than one
+    # <resultlist>...</resultlist> document as state changes (seen live:
+    # "junk after document element" from ET.fromstring on the concatenated
+    # output) — parse only the last one, which reflects the final state.
+    last = xml_text.rfind("<resultlist")
+    if last == -1:
+        return None
+    root = ET.fromstring(xml_text[last:])
+    codes = []
+    for result in root.iter("result"):
+        if result.get("repository") != repo:
+            continue
+        for status in result.findall("status"):
+            if status.get("package") == pkg:
+                codes.append((result.get("arch"), status.get("code")))
+    return codes
+
+
+def finish(series: str, target: str, codes, dry: bool):
+    pkg = f"nvidia-legacy-{series}"
+    repo = REPO[target]
+    ok = all(code == "succeeded" for _, code in codes)
+    print(f"{pkg}/{repo}: {codes} -> {'PASS' if ok else 'FAIL'}")
+    if dry:
+        print(f"(dry-run) would set {pkg}: {repo} -> {'enable' if ok else 'disable'}")
+    else:
+        set_flag(series, target, ok)
+    if not ok:
+        sys.exit(1)
+
+
 def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
     pkg = f"nvidia-legacy-{series}"
     repo = REPO[target]
 
+    # Fast path: a plain, non-watching read is near-instant and, if the
+    # build already settled, needs nothing else — seen live, -w hanging for
+    # minutes on repos that were already "published"/"succeeded" and should
+    # have returned immediately. Only fall through to the slow path (retries
+    # + -w) if this quick read fails or the build is genuinely still going.
+    quick = subprocess.run(
+        ["osc", "results", PROJECT, pkg, "-r", repo, "--xml"],
+        text=True, capture_output=True,
+    )
+    if quick.returncode == 0:
+        codes = parse_codes(quick.stdout, pkg, repo)
+        if codes and all(code not in PENDING for _, code in codes):
+            finish(series, target, codes, dry)
+            return
+
     # NOTE: no -M/--multibuild-package — the installed osc's CLI passes it
     # through as multibuild_packages=, which show_results_meta() in this
     # version doesn't accept (TypeError). -r plus our own package== filter
-    # below narrows to the same rows without it.
+    # in parse_codes() narrows to the same rows without it.
     #
     # A live run (36474866312) showed most misses aren't slow/failed builds
     # but transient network errors reaching the OBS API (SSL connection
@@ -92,35 +144,11 @@ def wait_and_gate(series: str, target: str, timeout: int, dry: bool = False):
             sys.exit(1)
         time.sleep(15)
 
-    # -w polls until the build settles and can print more than one
-    # <resultlist>...</resultlist> document as state changes (seen live:
-    # "junk after document element" from ET.fromstring on the concatenated
-    # output) — parse only the last one, which reflects the final state.
-    last = proc.stdout.rfind("<resultlist")
-    if last == -1:
-        print(f"{pkg}/{repo}: no resultlist in osc output: {proc.stdout!r}", file=sys.stderr)
-        sys.exit(1)
-    root = ET.fromstring(proc.stdout[last:])
-    codes = []
-    for result in root.iter("result"):
-        if result.get("repository") != repo:
-            continue
-        for status in result.findall("status"):
-            if status.get("package") == pkg:
-                codes.append((result.get("arch"), status.get("code")))
-
+    codes = parse_codes(proc.stdout, pkg, repo)
     if not codes:
         print(f"{pkg}/{repo}: no build results found", file=sys.stderr)
         sys.exit(1)
-
-    ok = all(code == "succeeded" for _, code in codes)
-    print(f"{pkg}/{repo}: {codes} -> {'PASS' if ok else 'FAIL'}")
-    if dry:
-        print(f"(dry-run) would set {pkg}: {repo} -> {'enable' if ok else 'disable'}")
-    else:
-        set_flag(series, target, ok)
-    if not ok:
-        sys.exit(1)
+    finish(series, target, codes, dry)
 
 
 if sys.argv[1] == "--gate":
